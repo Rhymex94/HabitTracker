@@ -1,0 +1,34 @@
+from flask_sqlalchemy import SQLAlchemy
+
+from app.enums import HabitFrequency, HabitType
+
+db = SQLAlchemy()
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    habits = db.relationship("Habit", backref="user", lazy=True)
+
+
+class Habit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+
+    type = db.Column(db.Enum(HabitType), nullable=False)
+
+    # Target definition
+    frequency = db.Column(db.Enum(HabitFrequency), nullable=False)
+    target_value = db.Column(db.Float, nullable=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    # Use the below to get access directly to the user.
+    # user = db.relationship("User", backref="habits")
+
+    progress_entries = db.relationship("ProgressEntry", backref="habit", lazy=True)
+
+
+class ProgressEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False)
+    value = db.Column(db.Float, nullable=False)
+    habit_id = db.Column(db.Integer, db.ForeignKey("habit.id"), nullable=False)
