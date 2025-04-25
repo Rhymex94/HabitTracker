@@ -3,3 +3,5 @@ flask
 flask_sqlalchemy
 pymysql
 Flask-Migrate
+pytest
+pytest-flask

@@ -4,6 +4,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
 
 from app import create_app, db
+from app.enums import HabitType, HabitFrequency
 from app.models import User, Habit, ProgressEntry
 import random
 import datetime
@@ -23,11 +24,29 @@ with app.app_context():
 
     # Add some test habits
     habits = [
-        Habit(name="Exercise", type="quantitative", frequency="daily", target_value=30, user_id=user.id),
-        Habit(name="Read", type="quantitative", frequency="daily", target_value=20, user_id=user.id),
-        Habit(name="Meditate", type="binary", frequency="daily", target_value=None, user_id=user.id)
+        Habit(
+            name="Exercise",
+            type=HabitType.QUANTITATIVE,
+            frequency=HabitFrequency.DAILY,
+            target_value=30,
+            user_id=user.id,
+        ),
+        Habit(
+            name="Read",
+            type=HabitType.QUANTITATIVE,
+            frequency=HabitFrequency.DAILY,
+            target_value=20,
+            user_id=user.id,
+        ),
+        Habit(
+            name="Meditate",
+            type=HabitType.BINARY,
+            frequency=HabitFrequency.DAILY,
+            target_value=None,
+            user_id=user.id,
+        ),
     ]
-    
+
     db.session.add_all(habits)
     db.session.commit()
 
@@ -35,11 +54,11 @@ with app.app_context():
     for habit in habits:
         for i in range(1, 11):  # 10 days of progress
             date = datetime.date.today() - datetime.timedelta(days=i)
-            if habit.type == "binary":
+            if habit.type == HabitType.BINARY.value:
                 value = random.choice([0, 1])  # Random yes/no (1 or 0)
             else:
                 value = random.randint(10, 45)  # Random minutes for "quantitative" habits
-            
+
             progress_entry = ProgressEntry(date=date, value=value, habit_id=habit.id)
             db.session.add(progress_entry)
 

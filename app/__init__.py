@@ -2,21 +2,23 @@ from flask import Flask
 from flask_migrate import Migrate
 
 from . import models
-from .routes import main
+from app.routes.habits import habits_bp
 
 
-
-# db = SQLAlchemy()
 db = models.db
 migrate = Migrate()
 
-def create_app():
+def create_app(configs = None):
     app = Flask(__name__)
-    app.config.from_object("app.config.Config")
+
+    if configs:
+        app.config.from_object(configs)
+    else:
+        app.config.from_object("app.config.Config")
 
     db.init_app(app)
     migrate.init_app(app, db)
 
-    app.register_blueprint(main)
+    app.register_blueprint(habits_bp)
 
     return app
