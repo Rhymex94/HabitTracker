@@ -24,11 +24,21 @@ class Habit(db.Model):
     # Use the below to get access directly to the user.
     # user = db.relationship("User", backref="habits")
 
-    progress_entries = db.relationship("ProgressEntry", backref="habit", lazy=True)
+    progress_entries = db.relationship(
+        "ProgressEntry",
+        backref="habit",
+        lazy=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
 
 class ProgressEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     value = db.Column(db.Float, nullable=False)
-    habit_id = db.Column(db.Integer, db.ForeignKey("habit.id"), nullable=False)
+    habit_id = db.Column(
+        db.Integer,
+        db.ForeignKey("habit.id", ondelete="CASCADE"),
+        nullable=False,
+    )

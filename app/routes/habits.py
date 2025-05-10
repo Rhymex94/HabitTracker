@@ -52,7 +52,7 @@ def fetch_habits():
     query = Habit.query
     if user_id:
         query = query.filter_by(user_id=user_id)
-    
+
     habits = query.all()
 
     return jsonify([
@@ -66,3 +66,16 @@ def fetch_habits():
         }
         for habit in habits
     ]), 200
+
+
+@habits_bp.route("/<int:habit_id>", methods=["DELETE"])
+def delete_habit(habit_id: int):
+    habit = db.session.get(Habit, habit_id)
+
+    if not habit:
+        return jsonify({"error": "Habit not found"}), 404
+
+    db.session.delete(habit)
+    db.session.commit()
+
+    return jsonify({"message": "Habit deleted successfully."}), 200
