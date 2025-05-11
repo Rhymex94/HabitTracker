@@ -1,7 +1,9 @@
 import pytest
 from app import create_app
-from app.models import db, Habit, User
+from app.models import db, Habit, User, ProgressEntry
 from app.enums import HabitType, HabitFrequency  # Adjust imports if needed
+
+from datetime import date
 
 
 class TestConfig:
@@ -53,7 +55,7 @@ def test_habits(app, test_user):
         Habit(
             name="Exercise",
             type=HabitType.QUANTITATIVE,
-            target_value=30,  # 30 minutes
+            target_value=30,
             frequency=HabitFrequency.WEEKLY,
             user_id=test_user.id,
         ),
@@ -61,3 +63,18 @@ def test_habits(app, test_user):
     db.session.add_all(habits)
     db.session.commit()
     return habits
+
+
+@pytest.fixture
+def progress_entries(app, test_habits):
+    habit = test_habits[0]
+
+    entries = [
+        ProgressEntry(habit_id=habit.id, date=date(2024, 5, 1), value=1),
+        ProgressEntry(habit_id=habit.id, date=date(2024, 5, 2), value=2),
+        ProgressEntry(habit_id=habit.id, date=date(2024, 5, 3), value=3),
+    ]
+    db.session
+    db.session.add_all(entries)
+    db.session.commit()
+    return entries
