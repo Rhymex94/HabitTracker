@@ -24,8 +24,8 @@ def create_app(configs = None):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    app.register_blueprint(habits_bp)
-    app.register_blueprint(progress_bp)
+    app.register_blueprint(habits_bp, url_prefix="/api/habits")
+    app.register_blueprint(progress_bp, url_prefix="/api/progress")
 
     return app
 
