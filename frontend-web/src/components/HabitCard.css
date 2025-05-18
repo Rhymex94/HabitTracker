@@ -1,0 +1,22 @@
+.habit-card {
+    background-color: var(--color-surface);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+  }
+  
+  .habit-card:hover {
+    transform: scale(1.02);
+  }
+  
+  .habit-card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+  }
+  
+  .habit-card .habit-type {
+    font-weight: bold;
+    color: var(--color-secondary);
+  }
