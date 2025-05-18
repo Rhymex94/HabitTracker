@@ -1,13 +1,16 @@
+import os
 from flask import Flask
 from flask_migrate import Migrate
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 import logging
 import sys
+from flask_cors import CORS
 
 from . import models
 from app.routes.habits import habits_bp
 from app.routes.progress import progress_bp
+from app.routes.auth import auth_bp
 
 
 db = models.db
@@ -15,6 +18,7 @@ migrate = Migrate()
 
 def create_app(configs = None):
     app = Flask(__name__)
+    CORS(app)
 
     if configs:
         app.config.from_object(configs)
@@ -24,6 +28,7 @@ def create_app(configs = None):
     db.init_app(app)
     migrate.init_app(app, db)
 
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(habits_bp, url_prefix="/api/habits")
     app.register_blueprint(progress_bp, url_prefix="/api/progress")
 

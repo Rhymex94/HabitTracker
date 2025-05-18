@@ -1,14 +1,14 @@
-from flask import Blueprint, request, jsonify, current_app
-import datetime
+from flask import Blueprint, request, jsonify
+from datetime import datetime
 from sqlalchemy.exc import IntegrityError
-
 from app.models import db, Habit, ProgressEntry
-
+from app.auth import token_required
 
 progress_bp = Blueprint("progress", __name__)
 
 
 @progress_bp.route("/progress", methods=["POST"])
+@token_required
 def add_progress():
     data = request.get_json()
     habit_id = data.get("habit_id")
@@ -18,13 +18,13 @@ def add_progress():
     if not habit_id or value is None:
         return jsonify({"error": "Missing required fields"}), 400
 
-    habit = db.session.get(Habit, habit_id)
+    habit = Habit.query.filter_by(id=habit_id, user_id=request.user_id).first()
     if not habit:
-        return jsonify({"error": "Habit not found"}), 404
+        return jsonify({"error": "Habit not found or unauthorized"}), 404
 
     try:
         entry_date = (
-            datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+            datetime.strptime(date_str, "%Y-%m-%d").date()
             if date_str
             else datetime.utcnow().date()
         )
@@ -36,11 +36,11 @@ def add_progress():
         if value not in [0, 1]:
             return jsonify({"error": "Binary habits must have value 0 or 1"}), 400
     elif habit.type.name == "QUANTITATIVE":
-        if not isinstance(value, int) or value < 0:
+        if not isinstance(value, (int, float)) or value < 0:
             return (
                 jsonify(
                     {
-                        "error": "Quantitative habits must have a non-negative integer value"
+                        "error": "Quantitative habits must have a non-negative numeric value"
                     }
                 ),
                 400,
@@ -68,26 +68,36 @@ def add_progress():
 
 
 @progress_bp.route("/progress", methods=["GET"])
+@token_required
 def get_progress_entries():
     habit_id = request.args.get("habit_id", type=int)
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
 
-    query = ProgressEntry.query
-
+    # First verify that the habit belongs to the user
     if habit_id:
-        query = query.filter_by(habit_id=habit_id)
+        habit = Habit.query.filter_by(id=habit_id, user_id=request.user_id).first()
+        if not habit:
+            return jsonify({"error": "Habit not found or unauthorized"}), 404
+
+    query = ProgressEntry.query
+    if habit_id:
+        query = query.join(Habit).filter(
+            Habit.user_id == request.user_id, ProgressEntry.habit_id == habit_id
+        )
+    else:
+        query = query.join(Habit).filter(Habit.user_id == request.user_id)
 
     if start_date:
         try:
-            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
             query = query.filter(ProgressEntry.date >= start_date_obj)
         except ValueError:
             return jsonify({"error": "Invalid start_date format. Use YYYY-MM-DD."}), 400
 
     if end_date:
         try:
-            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
             query = query.filter(ProgressEntry.date <= end_date_obj)
         except ValueError:
             return jsonify({"error": "Invalid end_date format. Use YYYY-MM-DD."}), 400
