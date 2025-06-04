@@ -8,11 +8,19 @@ interface HabitCardProps {
 
 const HabitCard: React.FC<HabitCardProps> = ({ habit }) => {
   return (
-    <div className="habit-card">
-      <h3>{habit.name}</h3>
-      <p className="habit-type">{habit.type}</p>
-      <p className="habit-frequency text-secondary">Frequency: {habit.frequency}</p>
-    </div>
+		<div className="habit-card">
+			<div className="habit-card-content">
+				<h3>{habit.name}</h3>
+				<p className="habit-type">{habit.type}</p>
+				<p className="habit-frequency text-secondary">
+					Frequency: {habit.frequency}
+				</p>
+			</div>
+			<div className="habit-buttons-container">
+				<button className="button button-primary">Edit</button>
+        <button className="button button-secondary">Delete</button>
+			</div>
+		</div>
   );
 };
 
