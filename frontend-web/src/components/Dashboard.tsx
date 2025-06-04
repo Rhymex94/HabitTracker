@@ -12,6 +12,7 @@ const Dashboard: React.FC = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
+	//TODO: Could replace the arrow function here with reloadHabits?
 	useEffect(() => {
 		api.get("/habits")
 			.then((response) => {
@@ -26,6 +27,17 @@ const Dashboard: React.FC = () => {
 				setLoading(false);
 			});
 	}, []);
+
+	const reloadHabits = async () => {
+		try {
+			const response = await api.get("/habits");
+			setHabits(response.data);
+			setError(null);
+		} catch (err) {
+			setError("Failed to fetch habits");
+			console.log("Error fetching habits", err);
+		}
+	};
 
 	const handleAddHabit = async (
 		newHabit: Omit<Habit, "id" | "created_at" | "updated_at">
@@ -59,7 +71,9 @@ const Dashboard: React.FC = () => {
 			</header>
 			{loading && <p>Loading...</p>}
 			{error && <p className="error-message">{error}</p>}
-			{!loading && !error && <HabitList habits={habits} />}
+			{!loading && !error && (
+				<HabitList habits={habits} reloadHabits={reloadHabits} />
+			)}
 			<AddHabitModal
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}

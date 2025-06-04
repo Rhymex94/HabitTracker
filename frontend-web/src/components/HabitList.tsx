@@ -3,17 +3,18 @@ import type { Habit } from '../types.ts';
 import HabitCard from './HabitCard.tsx';
 
 interface HabitListProps {
-  habits: Habit[];
+	habits: Habit[];
+	reloadHabits: () => void;
 }
 
-const HabitList: React.FC<HabitListProps> = ({ habits }) => {
-  return (
-    <div>
-      {habits.map((habit) => (
-        <HabitCard key={habit.id} habit={habit} />
-      ))}
-    </div>
-  );
+const HabitList: React.FC<HabitListProps> = ({ habits, ...props }) => {
+	return (
+		<div>
+			{habits.map((habit) => (
+				<HabitCard key={habit.id} habit={habit} {...props} />
+			))}
+		</div>
+	);
 };
 
 export default HabitList;
