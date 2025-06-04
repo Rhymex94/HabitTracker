@@ -15,10 +15,12 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit }) => {
 				<p className="habit-frequency text-secondary">
 					Frequency: {habit.frequency}
 				</p>
+				<p className="habit-target text-secondary">{habit.target}</p>
 			</div>
 			<div className="habit-buttons-container">
-				<button className="button button-primary">Edit</button>
-        <button className="button button-secondary">Delete</button>
+				<button className="button button-secondary">Add Progress</button>
+				<button className="button button-tertiary">Edit</button>
+				<button className="button button-danger">Delete</button>
 			</div>
 		</div>
   );

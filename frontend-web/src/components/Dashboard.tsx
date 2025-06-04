@@ -51,7 +51,7 @@ const Dashboard: React.FC = () => {
 						>
 							Add Habit
 						</button>
-						<button className="button button-secondary" onClick={logout}>
+						<button className="button button-tertiary" onClick={logout}>
 							Logout
 						</button>
 					</div>
