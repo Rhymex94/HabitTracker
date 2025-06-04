@@ -4,13 +4,15 @@ import type { Habit } from "../types";
 import api from "../api/axios";
 import HabitList from "./HabitList";
 import AddHabitModal from "./AddHabitModal";
+import DeleteHabitModal from "./DeleteHabitModal";
 
 const Dashboard: React.FC = () => {
 	const { logout } = useAuth();
 	const [habits, setHabits] = useState<Habit[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+	const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null);
 
 	//TODO: Could replace the arrow function here with reloadHabits?
 	useEffect(() => {
@@ -51,6 +53,16 @@ const Dashboard: React.FC = () => {
 		}
 	};
 
+	const handleDeleteHabit = async (habitId: number) => {
+		try {
+			await api.delete(`/habits/${habitId}`);
+			setHabitToDelete(null);
+			reloadHabits();
+		} catch (error) {
+			console.error("Error deleting habit:", error);
+		}
+	};
+
 	return (
 		<div>
 			<header className="header">
@@ -59,7 +71,7 @@ const Dashboard: React.FC = () => {
 					<div className="header-actions">
 						<button
 							className="add-button"
-							onClick={() => setIsModalOpen(true)}
+							onClick={() => setIsAddModalOpen(true)}
 						>
 							Add Habit
 						</button>
@@ -72,13 +84,20 @@ const Dashboard: React.FC = () => {
 			{loading && <p>Loading...</p>}
 			{error && <p className="error-message">{error}</p>}
 			{!loading && !error && (
-				<HabitList habits={habits} reloadHabits={reloadHabits} />
+				<HabitList habits={habits} selectHabitToDelete={setHabitToDelete} />
 			)}
 			<AddHabitModal
-				isOpen={isModalOpen}
-				onClose={() => setIsModalOpen(false)}
+				isOpen={isAddModalOpen}
+				onClose={() => setIsAddModalOpen(false)}
 				onSubmit={handleAddHabit}
 			/>
+			{habitToDelete && (
+				<DeleteHabitModal
+					habit={habitToDelete}
+					onClose={() => setHabitToDelete(null)}
+					onSubmit={handleDeleteHabit}
+				/>
+			)}
 		</div>
 	);
 };
