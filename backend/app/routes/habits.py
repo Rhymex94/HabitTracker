@@ -49,6 +49,26 @@ def create_habit():
     )
 
 
+@habits_bp.route("/<int:habit_id>", methods=["PATCH"])
+@token_required
+def update_habit(habit_id: int):
+    habit = Habit.query.filter_by(id=habit_id, user_id=request.user_id).first()
+
+    if not habit:
+        return jsonify({"error": "Habit not found"}), 404
+    data = request.get_json()
+
+    for key, value in data.items():
+        if key == "target":
+            key = "target_value"
+
+        setattr(habit, key, value)
+
+    db.session.commit()
+
+    return jsonify({"message": "Habit updated successfully."}), 200
+
+
 @habits_bp.route("", methods=["GET"])
 @token_required
 def fetch_habits():

@@ -5,9 +5,14 @@ import type { Habit } from "../types";
 interface HabitCardProps {
 	habit: Habit;
 	selectHabitToDelete: (habit: Habit | null) => void;
+	selectHabitToEdit: (habit: Habit | null) => void;
 }
 
-const HabitCard: React.FC<HabitCardProps> = ({ habit, selectHabitToDelete }) => {
+const HabitCard: React.FC<HabitCardProps> = ({
+	habit,
+	selectHabitToDelete,
+	selectHabitToEdit,
+}) => {
 	return (
 		<div className="habit-card">
 			<div className="habit-card-content">
@@ -20,7 +25,12 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, selectHabitToDelete }) => 
 			</div>
 			<div className="habit-buttons-container">
 				<button className="button button-secondary">Add Progress</button>
-				<button className="button button-tertiary">Edit</button>
+				<button
+					className="button button-tertiary"
+					onClick={() => selectHabitToEdit(habit)}
+				>
+					Edit
+				</button>
 				<button
 					className="button button-danger"
 					onClick={() => selectHabitToDelete(habit)}

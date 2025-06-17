@@ -5,6 +5,7 @@ import HabitCard from './HabitCard.tsx';
 interface HabitListProps {
 	habits: Habit[];
 	selectHabitToDelete: (habit: Habit | null) => void;
+	selectHabitToEdit: (habit: Habit | null) => void;
 }
 
 const HabitList: React.FC<HabitListProps> = ({ habits, ...props }) => {

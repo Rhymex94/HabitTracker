@@ -5,6 +5,7 @@ import api from "../api/axios";
 import HabitList from "./HabitList";
 import AddHabitModal from "./AddHabitModal";
 import DeleteHabitModal from "./DeleteHabitModal";
+import EditHabitModal from "./EditHabitModal";
 
 const Dashboard: React.FC = () => {
 	const { logout } = useAuth();
@@ -13,6 +14,7 @@ const Dashboard: React.FC = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 	const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null);
+	const [habitToEdit, setHabitToEdit] = useState<Habit | null>(null);
 
 	//TODO: Could replace the arrow function here with reloadHabits?
 	useEffect(() => {
@@ -53,6 +55,20 @@ const Dashboard: React.FC = () => {
 		}
 	};
 
+	const handleEditHabit = async (
+		habitId: number,
+		habit: Omit<Habit, "id" | "created_at" | "updated_at">
+	) => {
+		try {
+			await api.patch(`/habits/${habitId}`, habit);
+			setHabitToEdit(null);
+			reloadHabits();
+		} catch (err) {
+			setError("Failed to edit habit");
+			console.error("Error editing habit:", err);
+		}
+	};
+
 	const handleDeleteHabit = async (habitId: number) => {
 		try {
 			await api.delete(`/habits/${habitId}`);
@@ -84,7 +100,7 @@ const Dashboard: React.FC = () => {
 			{loading && <p>Loading...</p>}
 			{error && <p className="error-message">{error}</p>}
 			{!loading && !error && (
-				<HabitList habits={habits} selectHabitToDelete={setHabitToDelete} />
+				<HabitList habits={habits} selectHabitToDelete={setHabitToDelete} selectHabitToEdit={setHabitToEdit} />
 			)}
 			<AddHabitModal
 				isOpen={isAddModalOpen}
@@ -96,6 +112,13 @@ const Dashboard: React.FC = () => {
 					habit={habitToDelete}
 					onClose={() => setHabitToDelete(null)}
 					onSubmit={handleDeleteHabit}
+				/>
+			)}
+			{habitToEdit && (
+				<EditHabitModal
+					habit={habitToEdit}
+					onClose={() => setHabitToEdit(null)}
+					onSubmit={handleEditHabit}
 				/>
 			)}
 		</div>
