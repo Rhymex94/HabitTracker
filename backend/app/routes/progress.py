@@ -4,10 +4,10 @@ from sqlalchemy.exc import IntegrityError
 from app.models import db, Habit, ProgressEntry
 from app.auth import token_required
 
-progress_bp = Blueprint("progress", __name__)
+progress_bp = Blueprint("progress", __name__, url_prefix="/progress")
 
 
-@progress_bp.route("/progress", methods=["POST"])
+@progress_bp.route("", methods=["POST"])
 @token_required
 def add_progress():
     data = request.get_json()
@@ -67,7 +67,7 @@ def add_progress():
     )
 
 
-@progress_bp.route("/progress", methods=["GET"])
+@progress_bp.route("", methods=["GET"])
 @token_required
 def get_progress_entries():
     habit_id = request.args.get("habit_id", type=int)
@@ -116,7 +116,7 @@ def get_progress_entries():
     )
 
 
-@progress_bp.route("/progress/<int:entry_id>", methods=["DELETE"])
+@progress_bp.route("/<int:entry_id>", methods=["DELETE"])
 def delete_progress_entry(entry_id):
     entry = db.session.get(ProgressEntry, entry_id)
     if not entry:
