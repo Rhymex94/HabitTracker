@@ -7,6 +7,8 @@ import AddHabitModal from "./AddHabitModal";
 import DeleteHabitModal from "./DeleteHabitModal";
 import EditHabitModal from "./EditHabitModal";
 
+import { HabitProvider } from "../context/HabitContext";
+
 const Dashboard: React.FC = () => {
 	const { logout } = useAuth();
 	const [habits, setHabits] = useState<Habit[]>([]);
@@ -100,7 +102,12 @@ const Dashboard: React.FC = () => {
 			{loading && <p>Loading...</p>}
 			{error && <p className="error-message">{error}</p>}
 			{!loading && !error && (
-				<HabitList habits={habits} selectHabitToDelete={setHabitToDelete} selectHabitToEdit={setHabitToEdit} />
+				<HabitProvider
+					selectHabitToDelete={setHabitToDelete}
+					selectHabitToEdit={setHabitToEdit}
+				>
+					<HabitList habits={habits} />
+				</HabitProvider>
 			)}
 			<AddHabitModal
 				isOpen={isAddModalOpen}

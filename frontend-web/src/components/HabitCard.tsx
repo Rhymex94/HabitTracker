@@ -1,18 +1,14 @@
 import React from 'react';
 import './HabitCard.css';
 import type { Habit } from "../types";
+import { useHabitContext } from "../context/HabitContext";
 
 interface HabitCardProps {
 	habit: Habit;
-	selectHabitToDelete: (habit: Habit | null) => void;
-	selectHabitToEdit: (habit: Habit | null) => void;
 }
 
-const HabitCard: React.FC<HabitCardProps> = ({
-	habit,
-	selectHabitToDelete,
-	selectHabitToEdit,
-}) => {
+const HabitCard: React.FC<HabitCardProps> = ({ habit }) => {
+	const { selectHabitToDelete, selectHabitToEdit } = useHabitContext();
 	return (
 		<div className="habit-card">
 			<div className="habit-card-content">
