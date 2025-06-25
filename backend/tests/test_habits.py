@@ -2,27 +2,31 @@ from app.models import ProgressEntry
 
 import datetime
 
-def test_create_habit(client):
+
+def test_create_habit(client, test_user, test_auth_headers):
     # Send a valid habit creation request
-    response = client.post("/habits", json={
-        "name": "Test Habit",
-        "type": 1,  # BINARY
-        "target_value": 1,
-        "frequency": 1,  # DAILY
-        "user_id": 1
-    })
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Test Habit",
+            "type": "binary",
+            "target": 1,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
 
     assert response.status_code == 201
     data = response.get_json()
     assert data["name"] == "Test Habit"
-    assert data["type"] == 1
-    assert data["target_value"] == 1
-    assert data["frequency"] == 1
-    assert data["user_id"] == 1
+    assert data["type"] == "binary"
+    assert data["target"] == 1
+    assert data["frequency"] == "daily"
 
 
-def test_get_all_habits(client, test_habits):
-    response = client.get("/habits")
+def test_get_all_habits(client, test_habits, test_auth_headers):
+    response = client.get("/api/habits", headers=test_auth_headers)
     assert response.status_code == 200
     data = response.get_json()
     assert isinstance(data, list)
@@ -30,39 +34,37 @@ def test_get_all_habits(client, test_habits):
     names = [habit["name"] for habit in data]
     assert "Drink Water" in names
     assert "Exercise" in names
+    assert "Read" not in names
 
 
-def test_get_habits_filtered_by_user(client, test_user, test_habits):
-    response = client.get(f"/habits?user_id={test_user.id}")
-    assert response.status_code == 200
-    data = response.get_json()
-    assert all(habit["user_id"] == test_user.id for habit in data)
-
-
-def test_get_habits_no_habits(client):
-    response = client.get("/habits")
+def test_get_habits_no_habits(client, test_auth_headers):
+    response = client.get("/api/habits", headers=test_auth_headers)
     assert response.status_code == 200
     data = response.get_json()
     assert data == []
 
 
-def test_delete_habit(client, test_habits):
+def test_delete_habit(client, test_habits, test_auth_headers):
     habit_to_delete = test_habits[0]
 
     # Delete the habit
-    response = client.delete(f"/habits/{habit_to_delete.id}")
+    response = client.delete(
+        f"/api/habits/{habit_to_delete.id}", headers=test_auth_headers
+    )
     assert response.status_code == 200
     assert response.get_json()["message"] == "Habit deleted successfully."
 
     # Try to fetch it again to confirm deletion
-    fetch_response = client.get("/habits")
+    fetch_response = client.get("/api/habits", headers=test_auth_headers)
     data = fetch_response.get_json()
 
     habit_ids = [habit["id"] for habit in data]
     assert habit_to_delete.id not in habit_ids
 
 
-def test_delete_habit_cascades_progress_entries(client, app, test_habits):
+def test_delete_habit_cascades_progress_entries(
+    client, app, test_habits, test_auth_headers
+):
     habit_to_delete = test_habits[0]
 
     # Create a ProgressEntry linked to the habit
@@ -79,9 +81,10 @@ def test_delete_habit_cascades_progress_entries(client, app, test_habits):
         assert ProgressEntry.query.filter_by(habit_id=habit_to_delete.id).count() == 1
 
     # Delete the Habit
-    response = client.delete(f"/habits/{habit_to_delete.id}")
+    response = client.delete(
+        f"/api/habits/{habit_to_delete.id}", headers=test_auth_headers
+    )
     assert response.status_code == 200
-
 
     # Confirm that the ProgressEntry is gone
     with app.app_context():

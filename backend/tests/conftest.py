@@ -1,9 +1,12 @@
 import pytest
 from app import create_app
+from app.auth import create_access_token
 from app.models import db, Habit, User, ProgressEntry
 from app.enums import HabitType, HabitFrequency  # Adjust imports if needed
 
-from datetime import date
+from datetime import date, datetime, timedelta
+import jwt
+from werkzeug.security import generate_password_hash
 
 
 class TestConfig:
@@ -19,10 +22,6 @@ def app():
     with app.app_context():
         db.create_all()
 
-        user = User(username="test_user")
-        db.session.add(user)
-        db.session.commit()
-
     yield app
 
     with app.app_context():
@@ -36,14 +35,31 @@ def client(app):
 
 @pytest.fixture
 def test_user(app):
-    user = User(username="testuser")
+    user = User(
+        username="testuser",
+        password=generate_password_hash("Testpass123!").encode("utf-8"),
+    )
     db.session.add(user)
     db.session.commit()
     return user
 
 
 @pytest.fixture
+def test_auth_headers(app, test_user):
+    token = create_access_token(test_user.id)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
 def test_habits(app, test_user):
+
+    another_user = User(
+        username="anotheruser",
+        password=generate_password_hash("Testpass123!").encode("utf-8"),
+    )
+    db.session.add(another_user)
+    db.session.commit()
+
     habits = [
         Habit(
             name="Drink Water",
@@ -58,6 +74,13 @@ def test_habits(app, test_user):
             target_value=30,
             frequency=HabitFrequency.WEEKLY,
             user_id=test_user.id,
+        ),
+        Habit(
+            name="Read",
+            type=HabitType.BINARY,
+            target_value=15,
+            frequency=HabitFrequency.DAILY,
+            user_id=another_user.id,
         ),
     ]
     db.session.add_all(habits)

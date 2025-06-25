@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 import jwt
 import bcrypt
@@ -15,8 +15,8 @@ def check_password(plain_text_password: str, hashed_password: bytes) -> bool:
 
 def create_access_token(user_id: int) -> str:
     payload = {
-        "exp": datetime.utcnow() + timedelta(days=1),
-        "iat": datetime.utcnow(),
+        "exp": datetime.now(timezone.utc) + timedelta(days=1),
+        "iat": datetime.now(timezone.utc),
         "sub": user_id,
     }
     secret_key = str(current_app.config.get("SECRET_KEY", ""))
