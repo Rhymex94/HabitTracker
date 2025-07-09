@@ -56,7 +56,7 @@
     margin: 0;
   }
   
-  .add-button, .save-button {
+  .add-button, .save-button, .add-progress {
     background-color: var(--color-primary);
     color: var(--color-bg);
     padding: 0.6rem 1rem;
@@ -67,7 +67,7 @@
     transition: opacity 0.2s;
   }
   
-  .add-button:hover .save-button:hover {
+  .add-button:hover .save-button:hover, .add-progress:hover {
     opacity: 0.9;
   }
   
@@ -228,7 +228,7 @@
   .checkbox-group label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 5rem;
     cursor: pointer;
     margin-bottom: 0;
   }

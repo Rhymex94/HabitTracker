@@ -8,7 +8,8 @@ interface HabitCardProps {
 }
 
 const HabitCard: React.FC<HabitCardProps> = ({ habit }) => {
-	const { selectHabitToDelete, selectHabitToEdit } = useHabitContext();
+	const { selectHabitToDelete, selectHabitToEdit, selectHabitToAddProgressTo } =
+		useHabitContext();
 	return (
 		<div className="habit-card">
 			<div className="habit-card-content">
@@ -20,7 +21,12 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit }) => {
 				<p className="habit-target text-secondary">{habit.target}</p>
 			</div>
 			<div className="habit-buttons-container">
-				<button className="button button-secondary">Add Progress</button>
+				<button
+					className="button button-secondary"
+					onClick={() => selectHabitToAddProgressTo(habit)}
+				>
+					Add Progress
+				</button>
 				<button
 					className="button button-tertiary"
 					onClick={() => selectHabitToEdit(habit)}

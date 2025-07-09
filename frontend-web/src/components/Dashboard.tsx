@@ -8,6 +8,7 @@ import DeleteHabitModal from "./DeleteHabitModal";
 import EditHabitModal from "./EditHabitModal";
 
 import { HabitProvider } from "../context/HabitContext";
+import AddProgressModal from "./AddProgressModal";
 
 const Dashboard: React.FC = () => {
 	const { logout } = useAuth();
@@ -17,6 +18,7 @@ const Dashboard: React.FC = () => {
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 	const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null);
 	const [habitToEdit, setHabitToEdit] = useState<Habit | null>(null);
+	const [habitToAddProgressTo, setHabitToAddProgressTo] = useState<Habit | null>(null);
 
 	//TODO: Could replace the arrow function here with reloadHabits?
 	useEffect(() => {
@@ -81,6 +83,16 @@ const Dashboard: React.FC = () => {
 		}
 	};
 
+	const handleAddProgress = async (habitId: number, progress: number) => {
+		try {
+			await api.post("/progress", { habit_id: habitId, value: progress });
+			setHabitToAddProgressTo(null);
+			reloadHabits();
+		} catch (error) {
+			console.error("Error adding progress to habit:", error);
+		}
+	};
+
 	return (
 		<div>
 			<header className="header">
@@ -105,6 +117,7 @@ const Dashboard: React.FC = () => {
 				<HabitProvider
 					selectHabitToDelete={setHabitToDelete}
 					selectHabitToEdit={setHabitToEdit}
+					selectHabitToAddProgressTo={setHabitToAddProgressTo}
 				>
 					<HabitList habits={habits} />
 				</HabitProvider>
@@ -126,6 +139,13 @@ const Dashboard: React.FC = () => {
 					habit={habitToEdit}
 					onClose={() => setHabitToEdit(null)}
 					onSubmit={handleEditHabit}
+				/>
+			)}
+			{habitToAddProgressTo && (
+				<AddProgressModal
+					habit={habitToAddProgressTo}
+					onClose={() => setHabitToAddProgressTo(null)}
+					onSubmit={handleAddProgress}
 				/>
 			)}
 		</div>

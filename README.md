@@ -3,7 +3,8 @@
 Monorepo for both the backend and frontend of the habit tracker app.
 
 TODOs:
-* Consider combining the Habit modals, or to use the same root file
-* Implement adding progress to the habits
-* Implement a simple progress page: overview of which habits are reached within a 
-    timeframe (today, this week, this month etc.)
+
+-   Consider combining the Habit modals, or to use the same root file
+-   Implement completing binary-type habits
+-   Implement displaying progress of habits
+-   Implement viewing the habits within a timeframe (completions daily, weekly, monthly etc.)

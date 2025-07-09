@@ -2,9 +2,10 @@ import React, { createContext, useContext } from 'react';
 import type { Habit } from "../types";
 
 type HabitContextType = {
-    selectHabitToDelete: (habit: Habit | null) => void;
-    selectHabitToEdit: (habit: Habit | null) => void;
-}
+	selectHabitToDelete: (habit: Habit | null) => void;
+	selectHabitToEdit: (habit: Habit | null) => void;
+	selectHabitToAddProgressTo: (habit: Habit | null) => void;
+};
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
 
@@ -15,15 +16,19 @@ export const useHabitContext = () => {
 };
 
 export const HabitProvider = ({
-  children,
-  selectHabitToDelete,
-  selectHabitToEdit,
+	children,
+	selectHabitToDelete,
+	selectHabitToEdit,
+	selectHabitToAddProgressTo,
 }: {
-  children: React.ReactNode;
-  selectHabitToDelete: (habit: Habit | null) => void;
-  selectHabitToEdit: (habit: Habit | null) => void;
+	children: React.ReactNode;
+	selectHabitToDelete: (habit: Habit | null) => void;
+	selectHabitToEdit: (habit: Habit | null) => void;
+	selectHabitToAddProgressTo: (habit: Habit | null) => void;
 }) => (
-  <HabitContext.Provider value={{ selectHabitToDelete, selectHabitToEdit }}>
-    {children}
-  </HabitContext.Provider>
+	<HabitContext.Provider
+		value={{ selectHabitToDelete, selectHabitToEdit, selectHabitToAddProgressTo }}
+	>
+		{children}
+	</HabitContext.Provider>
 );
