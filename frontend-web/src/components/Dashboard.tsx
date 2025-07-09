@@ -9,6 +9,7 @@ import EditHabitModal from "./EditHabitModal";
 
 import { HabitProvider } from "../context/HabitContext";
 import AddProgressModal from "./AddProgressModal";
+import MarkHabitCompleteModal from "./MarkHabitCompleteModal";
 
 const Dashboard: React.FC = () => {
 	const { logout } = useAuth();
@@ -93,6 +94,13 @@ const Dashboard: React.FC = () => {
 		}
 	};
 
+	const isHabitBinary = (habit: Habit) => {
+		if (habit.type == "binary") {
+			return true;
+		}
+		return false;
+	};
+
 	return (
 		<div>
 			<header className="header">
@@ -141,8 +149,15 @@ const Dashboard: React.FC = () => {
 					onSubmit={handleEditHabit}
 				/>
 			)}
-			{habitToAddProgressTo && (
+			{habitToAddProgressTo && !isHabitBinary(habitToAddProgressTo) && (
 				<AddProgressModal
+					habit={habitToAddProgressTo}
+					onClose={() => setHabitToAddProgressTo(null)}
+					onSubmit={handleAddProgress}
+				/>
+			)}
+			{habitToAddProgressTo && isHabitBinary(habitToAddProgressTo) && (
+				<MarkHabitCompleteModal
 					habit={habitToAddProgressTo}
 					onClose={() => setHabitToAddProgressTo(null)}
 					onSubmit={handleAddProgress}
