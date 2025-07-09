@@ -95,7 +95,7 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
                             Cancel
                         </button>
                         <button type="submit" className="add-button">
-                            Add Habit
+                            Save Habit
                         </button>
                     </div>
                 </form>
