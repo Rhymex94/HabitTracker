@@ -23,7 +23,7 @@ const AddProgressModal: React.FC<AddProgressModalProps> = ({
             newValue = 1;
         }
 
-        onSubmit(habit.id, newValue); // TODO: or 1 if marking as complete.
+        onSubmit(habit.id, newValue);
         onClose();
     };
 

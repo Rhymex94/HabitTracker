@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import type { Habit } from "../types";
+import type { Habit, Progress } from "../types";
 import api from "../api/axios";
 import HabitList from "./HabitList";
 import AddHabitModal from "./AddHabitModal";
@@ -14,6 +14,7 @@ import MarkHabitCompleteModal from "./MarkHabitCompleteModal";
 const Dashboard: React.FC = () => {
 	const { logout } = useAuth();
 	const [habits, setHabits] = useState<Habit[]>([]);
+	const [progress, setProgress] = useState<Progress[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -31,6 +32,22 @@ const Dashboard: React.FC = () => {
 			.catch((err) => {
 				setError("Failed to fetch habits");
 				console.log("Error fetching habits", err);
+			})
+			.finally(() => {
+				setLoading(false);
+			});
+	}, []);
+
+	useEffect(() => {
+		// TODO: Should probably filter by the date. Daily by default?
+		api.get("/progress")
+			.then((response) => {
+				setProgress(response.data);
+				setError(null);
+			})
+			.catch((err) => {
+				setError("Failed to fetch progress");
+				console.log("Error fetching progress", err);
 			})
 			.finally(() => {
 				setLoading(false);
@@ -127,7 +144,7 @@ const Dashboard: React.FC = () => {
 					selectHabitToEdit={setHabitToEdit}
 					selectHabitToAddProgressTo={setHabitToAddProgressTo}
 				>
-					<HabitList habits={habits} />
+					{habits && <HabitList habits={habits} progress={progress} />}
 				</HabitProvider>
 			)}
 			<AddHabitModal

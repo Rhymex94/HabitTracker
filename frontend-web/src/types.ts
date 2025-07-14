@@ -7,3 +7,11 @@ export interface Habit {
 	created_at: string;
 	updated_at: string;
 }
+
+
+export interface Progress {
+	id: number,
+	habit_id: number,
+	date: string,
+	value: number,
+}
