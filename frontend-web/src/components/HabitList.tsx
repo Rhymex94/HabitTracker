@@ -26,6 +26,9 @@ const HabitList: React.FC<HabitListProps> = ({ habits, progress }) => {
 				progressMap.set(prog.habit_id, []);
 			}
 			let habit = habitMap[prog.habit_id];
+			if (habit == undefined) {
+				continue;
+			}
 
 			// Determine which progress entries we want to keep.
 			let cutOffDay = new Date();

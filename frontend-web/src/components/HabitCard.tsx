@@ -2,6 +2,7 @@ import React from 'react';
 import './HabitCard.css';
 import type { Habit, Progress } from "../types";
 import { useHabitContext } from "../context/HabitContext";
+import { FaCheck } from 'react-icons/fa';
 
 interface HabitCardProps {
 	habit: Habit;
@@ -51,6 +52,13 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress }) => {
 		return totalValue;
 	};
 
+	const isHabitCompleted = () => {
+		if (habit.type == "binary") {
+			return getBinaryProgress() == 1;
+		}
+		return getFrequencyProgress() >= habit.target;
+	};
+
 	return (
 		<div className="habit-card">
 			<div className="habit-card-content">
@@ -63,6 +71,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress }) => {
 			</div>
 			<div className="progress-container">
 				<label>{getProgressDisplay()}</label>
+				{isHabitCompleted() && <FaCheck className="habit-check-icon"/>}
 			</div>
 			<div className="habit-buttons-container">
 				<button

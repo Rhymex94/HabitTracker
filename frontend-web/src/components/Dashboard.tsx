@@ -91,6 +91,7 @@ const Dashboard: React.FC = () => {
 			await api.delete(`/habits/${habitId}`);
 			setHabitToDelete(null);
 			reloadHabits();
+			reloadProgress();
 		} catch (error) {
 			console.error("Error deleting habit:", error);
 		}
