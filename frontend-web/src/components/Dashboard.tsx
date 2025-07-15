@@ -23,10 +23,8 @@ const Dashboard: React.FC = () => {
 	const [habitToAddProgressTo, setHabitToAddProgressTo] = useState<Habit | null>(null);
 
 	useEffect(() => {
-		Promise.all([api.get("/habits"), api.get("/progress")])
-			.then(([habitsResponse, progressResponse]) => {
-				setHabits(habitsResponse.data);
-				setProgress(progressResponse.data);
+		Promise.all([reloadHabits(), reloadProgress()])
+			.then(() => {
 				setError(null);
 			})
 			.catch((err) => {
