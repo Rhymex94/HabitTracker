@@ -22,31 +22,16 @@ const Dashboard: React.FC = () => {
 	const [habitToEdit, setHabitToEdit] = useState<Habit | null>(null);
 	const [habitToAddProgressTo, setHabitToAddProgressTo] = useState<Habit | null>(null);
 
-	//TODO: Could replace the arrow function here with reloadHabits?
 	useEffect(() => {
-		api.get("/habits")
-			.then((response) => {
-				setHabits(response.data);
+		Promise.all([api.get("/habits"), api.get("/progress")])
+			.then(([habitsResponse, progressResponse]) => {
+				setHabits(habitsResponse.data);
+				setProgress(progressResponse.data);
 				setError(null);
 			})
 			.catch((err) => {
-				setError("Failed to fetch habits");
-				console.log("Error fetching habits", err);
-			})
-			.finally(() => {
-				setLoading(false);
-			});
-	}, []);
-
-	useEffect(() => {
-		api.get("/progress")
-			.then((response) => {
-				setProgress(response.data);
-				setError(null);
-			})
-			.catch((err) => {
-				setError("Failed to fetch progress");
-				console.log("Error fetching progress", err);
+				setError("Failed to fetch habits or progress");
+				console.error("Error fetching data", err);
 			})
 			.finally(() => {
 				setLoading(false);
@@ -54,25 +39,27 @@ const Dashboard: React.FC = () => {
 	}, []);
 
 	const reloadHabits = async () => {
-		try {
-			const response = await api.get("/habits");
-			setHabits(response.data);
-			setError(null);
-		} catch (err) {
-			setError("Failed to fetch habits");
-			console.log("Error fetching habits", err);
-		}
+		return api
+			.get("/habits")
+			.then((response) => {
+				setHabits(response.data);
+			})
+			.catch((err) => {
+				console.error("Failed to load habits", err);
+				throw err;
+			});
 	};
 
 	const reloadProgress = async () => {
-		try {
-			const response = await api.get("/progress");
-			setProgress(response.data);
-			setError(null);
-		} catch (err) {
-			setError("Failed to fetch progress");
-			console.log("Error fetching progress", err);
-		}
+		return api
+			.get("/progress")
+			.then((response) => {
+				setProgress(response.data);
+			})
+			.catch((err) => {
+				setError("Failed to load progress");
+				throw err;
+			});
 	};
 
 	const handleAddHabit = async (

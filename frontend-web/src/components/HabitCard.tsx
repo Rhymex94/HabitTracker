@@ -21,12 +21,22 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress }) => {
 
 	const getBinaryProgress = () => {
 		let latestDate: Date | null = null;
+		let latestId: number | null = null;
 		let latestValue = 0;
 		for (let prog of progress) {
 			let progDate = new Date(prog.date);
+			progDate.setHours(0, 0, 0, 0);
 
-			if (latestDate == null || latestValue == null || progDate > latestDate) {
+			if (latestDate == null || latestId == null) {
 				latestDate = progDate;
+				latestId = prog.id;
+				latestValue = prog.value;
+				continue;
+			}
+
+			if (progDate > latestDate || (progDate >= latestDate && prog.id > latestId)) {
+				latestDate = progDate;
+				latestId = prog.id;
 				latestValue = prog.value;
 			}
 		}
