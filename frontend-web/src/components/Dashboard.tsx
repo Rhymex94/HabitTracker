@@ -39,7 +39,6 @@ const Dashboard: React.FC = () => {
 	}, []);
 
 	useEffect(() => {
-		// TODO: Should probably filter by the date. Daily by default?
 		api.get("/progress")
 			.then((response) => {
 				setProgress(response.data);
@@ -62,6 +61,17 @@ const Dashboard: React.FC = () => {
 		} catch (err) {
 			setError("Failed to fetch habits");
 			console.log("Error fetching habits", err);
+		}
+	};
+
+	const reloadProgress = async () => {
+		try {
+			const response = await api.get("/progress");
+			setProgress(response.data);
+			setError(null);
+		} catch (err) {
+			setError("Failed to fetch progress");
+			console.log("Error fetching progress", err);
 		}
 	};
 
@@ -105,7 +115,7 @@ const Dashboard: React.FC = () => {
 		try {
 			await api.post("/progress", { habit_id: habitId, value: progress });
 			setHabitToAddProgressTo(null);
-			reloadHabits();
+			reloadProgress();
 		} catch (error) {
 			console.error("Error adding progress to habit:", error);
 		}

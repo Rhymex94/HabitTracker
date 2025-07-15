@@ -33,6 +33,7 @@ const HabitList: React.FC<HabitListProps> = ({ habits, progress }) => {
 
 			switch (habit.frequency) {
 				case "weekly": {
+					// TODO: change to actual weeks, not just 7 day periods.
 					cutOffDay.setDate(cutOffDay.getDate() - 7);
 					break;
 				}
