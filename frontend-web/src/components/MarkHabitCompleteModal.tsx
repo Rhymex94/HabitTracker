@@ -70,7 +70,7 @@ const AddProgressModal: React.FC<AddProgressModalProps> = ({
                             Cancel
                         </button>
                         <button type="submit" className={completed ? "button button-danger" : "button button-primary"}>
-                            Add Progress
+                            {completed ? "Mark incomplete" : "Mark complete"}
                         </button>
                     </div>
                 </form>

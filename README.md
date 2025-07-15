@@ -10,4 +10,3 @@ TODOs:
     -   Max and current streaks of completions
 -   Change the add-button, save-button and add-progress classes to use the button-primary
     class instead.
-- Make the binary add-progress buttons context specific (better copy)
