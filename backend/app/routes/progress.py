@@ -30,6 +30,8 @@ def add_progress():
         )
     except ValueError:
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+    
+    # TODO: Add validation that the date cannot be in the future.
 
     # Validate value according to habit type
     if habit.type.name == "BINARY":

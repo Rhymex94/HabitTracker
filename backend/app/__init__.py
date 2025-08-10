@@ -10,6 +10,7 @@ from flask_cors import CORS
 from . import models
 from app.routes.habits import habits_bp
 from app.routes.progress import progress_bp
+from app.routes.stats import stats_bp
 from app.routes.auth import auth_bp
 
 
@@ -31,6 +32,7 @@ def create_app(configs = None):
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(habits_bp, url_prefix="/api/habits")
     app.register_blueprint(progress_bp, url_prefix="/api/progress")
+    app.register_blueprint(stats_bp, url_prefix="/api/stats")
 
     return app
 

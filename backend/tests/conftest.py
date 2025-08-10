@@ -1,12 +1,13 @@
 import pytest
+from unittest.mock import patch, MagicMock
+from datetime import date, datetime, timedelta
+import jwt
+from werkzeug.security import generate_password_hash
+
 from app import create_app
 from app.auth import create_access_token
 from app.models import db, Habit, User, ProgressEntry
 from app.enums import HabitType, HabitFrequency  # Adjust imports if needed
-
-from datetime import date, datetime, timedelta
-import jwt
-from werkzeug.security import generate_password_hash
 
 
 class TestConfig:
@@ -100,4 +101,39 @@ def progress_entries(app, test_habits):
     db.session
     db.session.add_all(entries)
     db.session.commit()
+    return entries
+
+
+@pytest.fixture
+def mock_habits(monkeypatch, request, test_user):
+    habits_data = request.param["habits"]
+    path = request.param["path"]
+
+    habits = [Habit(user_id=test_user.id, **data) for data in habits_data]
+
+    query_mock = MagicMock()
+    query_mock.filter_by.return_value = query_mock
+    query_mock.order_by.return_value = query_mock
+    query_mock.all.return_value = habits
+    query_mock.__iter__.return_value = iter(habits)
+
+    monkeypatch.setattr(path, query_mock)
+    return habits
+
+
+@pytest.fixture
+def mock_progress_entries(monkeypatch, request):
+    entries = request.param["entries"]
+    path = request.param["path"]
+
+    called = MagicMock()
+    called.filter.return_value = called
+    called.order_by.return_value = called
+    called.all.return_value = entries
+    called.__iter__.return_value = iter(entries)
+
+    query_callable = MagicMock()
+    query_callable.return_value = called
+
+    monkeypatch.setattr(path, query_callable)
     return entries
