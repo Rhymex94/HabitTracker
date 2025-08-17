@@ -5,9 +5,10 @@ import HabitCard from "./HabitCard.tsx";
 interface HabitListProps {
 	habits: Habit[];
 	progress: Progress[];
+	stats: Map<string, number>;
 }
 
-const HabitList: React.FC<HabitListProps> = ({ habits, progress }) => {
+const HabitList: React.FC<HabitListProps> = ({ habits, progress, stats }) => {
 	const habitMap = useMemo(() => {
 		let habitMap: { [habit_id: number]: Habit } = {};
 		for (let habit of habits) {
@@ -67,6 +68,7 @@ const HabitList: React.FC<HabitListProps> = ({ habits, progress }) => {
 					key={habit.id}
 					habit={habit}
 					progress={progressMap.get(habit.id) || []}
+					stats={stats.get(habit.id.toString())}
 				/>
 			))}
 		</div>

@@ -2,14 +2,15 @@ import React from 'react';
 import './HabitCard.css';
 import type { Habit, Progress } from "../types";
 import { useHabitContext } from "../context/HabitContext";
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaFire } from "react-icons/fa";
 
 interface HabitCardProps {
 	habit: Habit;
 	progress: Progress[];
+	stats: number | undefined;
 }
 
-const HabitCard: React.FC<HabitCardProps> = ({ habit, progress }) => {
+const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 	const { selectHabitToDelete, selectHabitToEdit, selectHabitToAddProgressTo } =
 		useHabitContext();
 
@@ -71,7 +72,13 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress }) => {
 			</div>
 			<div className="progress-container">
 				<label>{getProgressDisplay()}</label>
-				{isHabitCompleted() && <FaCheck className="habit-check-icon"/>}
+				{isHabitCompleted() && <FaCheck className="habit-check-icon" />}
+			</div>
+			<div className="streak-container">
+				{stats !== undefined && stats !== 0 && <label>({stats})</label>}
+				{stats !== undefined && stats !== 0 && (
+					<FaFire className="streak-fire-icon" />
+				)}
 			</div>
 			<div className="habit-buttons-container">
 				<button

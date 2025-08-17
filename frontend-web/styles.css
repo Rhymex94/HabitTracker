@@ -247,3 +247,8 @@
     color: var(--color-primary);
     margin-left: 0.5rem;
   }
+
+  .streak-fire-icon {
+    color: var(--color-error);
+    margin-left: 0.5rem;
+  }

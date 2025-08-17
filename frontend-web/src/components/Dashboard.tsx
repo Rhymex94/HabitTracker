@@ -15,6 +15,7 @@ const Dashboard: React.FC = () => {
 	const { logout } = useAuth();
 	const [habits, setHabits] = useState<Habit[]>([]);
 	const [progress, setProgress] = useState<Progress[]>([]);
+	const [stats, setStats] = useState<Map<string, number>>(new Map());
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -23,7 +24,7 @@ const Dashboard: React.FC = () => {
 	const [habitToAddProgressTo, setHabitToAddProgressTo] = useState<Habit | null>(null);
 
 	useEffect(() => {
-		Promise.all([reloadHabits(), reloadProgress()])
+		Promise.all([reloadHabits(), reloadProgress(), reloadStats()])
 			.then(() => {
 				setError(null);
 			})
@@ -60,6 +61,18 @@ const Dashboard: React.FC = () => {
 			});
 	};
 
+	const reloadStats = async () => {
+		return api
+			.get("/stats")
+			.then((response) => {
+				setStats(new Map(Object.entries(response.data)));
+			})
+			.catch((err) => {
+				setError("Failed to load stats");
+				throw err;
+			});
+	};
+
 	const handleAddHabit = async (
 		newHabit: Omit<Habit, "id" | "created_at" | "updated_at">
 	) => {
@@ -92,6 +105,7 @@ const Dashboard: React.FC = () => {
 			setHabitToDelete(null);
 			reloadHabits();
 			reloadProgress();
+			reloadStats();
 		} catch (error) {
 			console.error("Error deleting habit:", error);
 		}
@@ -102,6 +116,7 @@ const Dashboard: React.FC = () => {
 			await api.post("/progress", { habit_id: habitId, value: progress });
 			setHabitToAddProgressTo(null);
 			reloadProgress();
+			reloadStats();
 		} catch (error) {
 			console.error("Error adding progress to habit:", error);
 		}
@@ -140,7 +155,9 @@ const Dashboard: React.FC = () => {
 					selectHabitToEdit={setHabitToEdit}
 					selectHabitToAddProgressTo={setHabitToAddProgressTo}
 				>
-					{habits && <HabitList habits={habits} progress={progress} />}
+					{habits && (
+						<HabitList habits={habits} progress={progress} stats={stats} />
+					)}
 				</HabitProvider>
 			)}
 			<AddHabitModal
