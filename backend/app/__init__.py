@@ -19,7 +19,15 @@ migrate = Migrate()
 
 def create_app(configs = None):
     app = Flask(__name__)
-    CORS(app)
+    CORS(
+        app,
+        origins=[
+            "http://localhost:8321",
+            "http://frontend:8321",
+            "http://192.168.1.169:8321",
+        ],
+        supports_credentials=True,
+    )
 
     if configs:
         app.config.from_object(configs)

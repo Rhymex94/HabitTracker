@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
+  backend:
+    build: ./backend
     ports:
-      - "8100:5000"
+      - "8320:5000"
+    expose:
+      - "8320"
     volumes:
-      - .:/app
+      - ./backend:/app
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
@@ -30,6 +32,15 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-
+    
+  frontend:
+    build:
+      context: ./frontend-web
+      args:
+        - VITE_API_URL=http://localhost:8320
+    ports:
+      - "8321:80"
+    depends_on:
+      - backend
 volumes:
   db_data:
