@@ -7,7 +7,6 @@ TODOs:
 -   Consider combining the Habit modals, or to use the same root file
 -   Implement a stats view of habits:
     -   Percentage of completed days/weeks/months/years
-    -   Display the current streak (and perhaps max streak?)
 -   Change the add-button, save-button and add-progress classes to use the button-primary
     class instead.
 -   Implement "units" (for quantitative habits. Minutes, repetitions etc.)
