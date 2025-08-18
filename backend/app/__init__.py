@@ -19,13 +19,11 @@ migrate = Migrate()
 
 def create_app(configs = None):
     app = Flask(__name__)
+
+    frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
     CORS(
         app,
-        origins=[
-            "http://localhost:8321",
-            "http://frontend:8321",
-            "http://192.168.1.169:8321",
-        ],
+        origins=[frontend_origin],
         supports_credentials=True,
     )
 

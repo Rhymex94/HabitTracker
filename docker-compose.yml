@@ -5,13 +5,12 @@ services:
     build: ./backend
     ports:
       - "8320:5000"
-    expose:
-      - "8320"
     volumes:
       - ./backend:/app
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
+      - FRONTEND_ORIGIN=http://localhost:8321
     depends_on:
       - db
     # TODO: Add a proper wait-for script.
