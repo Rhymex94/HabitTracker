@@ -11,6 +11,7 @@ services:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
       - FRONTEND_ORIGIN=http://localhost:8321
+      - FLASK_APP=app:create_app
     depends_on:
       - db
     # TODO: Add a proper wait-for script.
