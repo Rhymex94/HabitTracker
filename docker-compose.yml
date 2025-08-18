@@ -8,7 +8,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
-      - FRONTEND_ORIGIN=http://localhost:8321
+      - FRONTEND_ORIGIN=http://192.168.1.169:8321
       - FLASK_APP=app:create_app
     depends_on:
       - db
@@ -35,7 +35,7 @@ services:
     build:
       context: ./frontend-web
       args:
-        - VITE_API_URL=http://localhost:8320
+        - VITE_API_URL=http://192.168.1.169:8320
     ports:
       - "8321:80"
     depends_on:
