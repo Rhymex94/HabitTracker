@@ -1,8 +1,8 @@
 import enum
 
 class HabitType(enum.Enum):
-    BINARY = 1
-    QUANTITATIVE = 2
+    ABOVE = 1
+    BELOW = 2
 
 
 class HabitFrequency(enum.Enum):
@@ -10,4 +10,3 @@ class HabitFrequency(enum.Enum):
     WEEKLY = 2
     MONTHLY = 3
     YEARLY = 4
-

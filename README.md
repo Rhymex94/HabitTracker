@@ -11,7 +11,7 @@ TODOs:
     class instead.
 -   Implement "units" (for quantitative habits. Minutes, repetitions etc.)
 -   Implement "maximum value" habits (considered successful if below target value)
--   Remove the Binary habit type
+-   Add a checkbox to control whether the user wants to add a custom target value (not 1)
 -   Limit the amount of entries fetched by the UI. Won't need entire history every time.
 -   Hide target_value from Habits that are BINARY (only 1 makes sense with these).
 -   Make sense of the tests. Consider using Factories. Clean mocks/fixtures

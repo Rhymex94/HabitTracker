@@ -30,23 +30,11 @@ def add_progress():
         )
     except ValueError:
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
-    
+
     # TODO: Add validation that the date cannot be in the future.
 
-    # Validate value according to habit type
-    if habit.type.name == "BINARY":
-        if value not in [0, 1]:
-            return jsonify({"error": "Binary habits must have value 0 or 1"}), 400
-    elif habit.type.name == "QUANTITATIVE":
-        if not isinstance(value, (int, float)) or value < 0:
-            return (
-                jsonify(
-                    {
-                        "error": "Quantitative habits must have a non-negative numeric value"
-                    }
-                ),
-                400,
-            )
+    if not isinstance(value, (int, float)):
+        return jsonify({"error": "target value is required."}), 400
 
     try:
         entry = ProgressEntry(habit_id=habit_id, date=entry_date, value=value)

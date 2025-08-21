@@ -10,7 +10,7 @@ def test_create_habit(client, test_user, test_auth_headers):
         headers=test_auth_headers,
         json={
             "name": "Test Habit",
-            "type": "binary",
+            "type": "above",
             "target": 1,
             "frequency": "daily",
             "user_id": test_user.id,
@@ -20,7 +20,7 @@ def test_create_habit(client, test_user, test_auth_headers):
     assert response.status_code == 201
     data = response.get_json()
     assert data["name"] == "Test Habit"
-    assert data["type"] == "binary"
+    assert data["type"] == "above"
     assert data["target"] == 1
     assert data["frequency"] == "daily"
 

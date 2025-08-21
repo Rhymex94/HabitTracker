@@ -9,7 +9,7 @@ interface AddHabitModalProps {
 
 const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit }) => {
 	const [name, setName] = useState("");
-	const [type, setType] = useState<"binary" | "quantitative">("binary");
+	const [type, setType] = useState<"above" | "below">("above");
 	const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">(
 		"daily"
 	);
@@ -26,7 +26,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 			target: parseInt(target, 10),
 		});
 		setName("");
-		setType("binary");
+		setType("above");
 		setFrequency("daily");
 		setTarget("1");
 		onClose();
@@ -53,11 +53,11 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 							id="type"
 							value={type}
 							onChange={(e) =>
-								setType(e.target.value as "binary" | "quantitative")
+								setType(e.target.value as "above" | "below")
 							}
 						>
-							<option value="binary">Binary</option>
-							<option value="quantitative">Quantitative</option>
+							<option value="above">Above</option>
+							<option value="below">Below</option>
 						</select>
 					</div>
 					<div className="form-group">

@@ -64,21 +64,21 @@ def test_habits(app, test_user):
     habits = [
         Habit(
             name="Drink Water",
-            type=HabitType.BINARY,
+            type=HabitType.ABOVE,
             target_value=1,
             frequency=HabitFrequency.DAILY,
             user_id=test_user.id,
         ),
         Habit(
             name="Exercise",
-            type=HabitType.QUANTITATIVE,
+            type=HabitType.ABOVE,
             target_value=30,
             frequency=HabitFrequency.WEEKLY,
             user_id=test_user.id,
         ),
         Habit(
             name="Read",
-            type=HabitType.BINARY,
+            type=HabitType.ABOVE,
             target_value=15,
             frequency=HabitFrequency.DAILY,
             user_id=another_user.id,

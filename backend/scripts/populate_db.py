@@ -26,23 +26,23 @@ with app.app_context():
     habits = [
         Habit(
             name="Exercise",
-            type=HabitType.QUANTITATIVE,
+            type=HabitType.ABOVE,
             frequency=HabitFrequency.DAILY,
             target_value=30,
             user_id=user.id,
         ),
         Habit(
             name="Read",
-            type=HabitType.QUANTITATIVE,
+            type=HabitType.ABOVE,
             frequency=HabitFrequency.DAILY,
             target_value=20,
             user_id=user.id,
         ),
         Habit(
             name="Meditate",
-            type=HabitType.BINARY,
+            type=HabitType.ABOVE,
             frequency=HabitFrequency.DAILY,
-            target_value=None,
+            target_value=1,
             user_id=user.id,
         ),
     ]
@@ -54,10 +54,7 @@ with app.app_context():
     for habit in habits:
         for i in range(1, 11):  # 10 days of progress
             date = datetime.date.today() - datetime.timedelta(days=i)
-            if habit.type == HabitType.BINARY.value:
-                value = random.choice([0, 1])  # Random yes/no (1 or 0)
-            else:
-                value = random.randint(10, 45)  # Random minutes for "quantitative" habits
+            value = random.randint(10, 45)
 
             progress_entry = ProgressEntry(date=date, value=value, habit_id=habit.id)
             db.session.add(progress_entry)

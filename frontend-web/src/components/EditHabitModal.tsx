@@ -9,7 +9,7 @@ interface EditHabitModalProps {
 
 const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmit }) => {
     const [name, setName] = useState(habit.name);
-    const [type, setType] = useState<"binary" | "quantitative">(habit.type);
+    const [type, setType] = useState<"above" | "below">(habit.type);
     const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">(
         habit.frequency
     );
@@ -47,11 +47,11 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
                             id="type"
                             value={type}
                             onChange={(e) =>
-                                setType(e.target.value as "binary" | "quantitative")
+                                setType(e.target.value as "above" | "below")
                             }
                         >
-                            <option value="binary">Binary</option>
-                            <option value="quantitative">Quantitative</option>
+                            <option value="above">Above</option>
+                            <option value="below">Below</option>
                         </select>
                     </div>
                     <div className="form-group">

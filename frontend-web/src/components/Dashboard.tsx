@@ -123,7 +123,7 @@ const Dashboard: React.FC = () => {
 	};
 
 	const isHabitBinary = (habit: Habit) => {
-		if (habit.type == "binary") {
+		if (habit.target == 1) {
 			return true;
 		}
 		return false;

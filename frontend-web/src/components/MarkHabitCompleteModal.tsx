@@ -18,7 +18,7 @@ const AddProgressModal: React.FC<AddProgressModalProps> = ({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        let newValue = 0;
+        let newValue = -1;
         if (!completed) {
             newValue = 1;
         }

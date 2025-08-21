@@ -68,10 +68,7 @@ def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
                 return streak
 
         # Otherwise, we're within the period (could be the first in the new period).
-        if habit.type == HabitType.QUANTITATIVE:
-            current_range_value += entry.value
-        else:
-            current_range_value = entry.value
+        current_range_value += entry.value
 
     # Final check. In case the streak is unbroken from the beginning.
     if current_range_value >= habit.target_value:

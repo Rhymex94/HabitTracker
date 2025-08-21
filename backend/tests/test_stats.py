@@ -35,8 +35,8 @@ def _make_entries(dates_and_values):
     return [MockProgressEntry(d, v) for d, v in sorted_items]
 
 
-def test_calculate_streak_daily_quantitative():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.QUANTITATIVE, target_value=10)
+def test_calculate_streak_daily_above():
+    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=10)
     today = date.today()
 
     # Entries exactly meeting target yesterday and day before, but not today yet
@@ -52,8 +52,8 @@ def test_calculate_streak_daily_quantitative():
     assert streak == 2  # 2 days streak, stopped by day -3
 
 
-def test_calculate_streak_daily_quantitative_with_today_entry():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.QUANTITATIVE, target_value=10)
+def test_calculate_streak_daily_above_with_today_entry():
+    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=10)
     today = date.today()
 
     entries = _make_entries(
@@ -69,8 +69,8 @@ def test_calculate_streak_daily_quantitative_with_today_entry():
     assert streak == 2
 
 
-def test_calculate_streak_daily_non_quantitative():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.BINARY, target_value=1)
+def test_calculate_streak_daily_below():
+    habit = MockHabit(HabitFrequency.DAILY, HabitType.BELOW, target_value=1)
     today = date.today()
 
     entries = _make_entries(
@@ -86,7 +86,7 @@ def test_calculate_streak_daily_non_quantitative():
 
 
 def test_calculate_streak_weekly():
-    habit = MockHabit(HabitFrequency.WEEKLY, HabitType.QUANTITATIVE, target_value=5)
+    habit = MockHabit(HabitFrequency.WEEKLY, HabitType.ABOVE, target_value=5)
     today = date.today()
     # Let's assume weeks start on Monday, create entries for last two weeks hitting targets
     current_week_start, _ = get_date_range(today, HabitFrequency.WEEKLY)
@@ -109,7 +109,7 @@ def test_calculate_streak_weekly():
 
 
 def test_calculate_streak_break_in_streak():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.QUANTITATIVE, target_value=5)
+    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=5)
     today = date.today()
 
     entries = _make_entries(
@@ -125,11 +125,27 @@ def test_calculate_streak_break_in_streak():
 
 
 def test_calculate_streak_empty_progress():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.QUANTITATIVE, target_value=5)
+    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=5)
     entries = []
 
     streak = calculate_streak(habit, entries)
     assert streak == 0
+
+
+def test_binary_habit_done_then_undone():
+    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=1)
+    today = date.today()
+
+    entries = _make_entries(
+        [
+            (today - timedelta(days=1), 1),
+            (today - timedelta(minutes=10), 1),
+            (today - timedelta(minutes=5), -1),
+        ]
+    )
+
+    streak = calculate_streak(habit, entries)
+    assert streak == 1
 
 
 @pytest.mark.parametrize(
@@ -142,14 +158,14 @@ def test_calculate_streak_empty_progress():
                         "id": 1,
                         "name": "Drink water",
                         "frequency": HabitFrequency.DAILY,
-                        "type": HabitType.QUANTITATIVE,
+                        "type": HabitType.ABOVE,
                         "target_value": 8,
                     },
                     {
                         "id": 2,
                         "name": "Go for a run",
                         "frequency": HabitFrequency.WEEKLY,
-                        "type": HabitType.BINARY,
+                        "type": HabitType.ABOVE,
                         "target_value": 1,
                     },
                 ],
