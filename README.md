@@ -10,6 +10,8 @@ TODOs:
 -   Change the add-button, save-button and add-progress classes to use the button-primary
     class instead.
 -   Implement "units" (for quantitative habits. Minutes, repetitions etc.)
+-   Implement "maximum value" habits (considered successful if below target value)
+-   Remove the Binary habit type
 -   Limit the amount of entries fetched by the UI. Won't need entire history every time.
 -   Hide target_value from Habits that are BINARY (only 1 makes sense with these).
 -   Make sense of the tests. Consider using Factories. Clean mocks/fixtures
@@ -17,3 +19,4 @@ TODOs:
     -   Use parametrization for helper functions to test edge-cases
     -   Use mocks for nested helper function calls (already testing individual helpers)
     -   Use factories for setting up DB data for actual endpoint tests
+-   Move the VITE_API_URL away from the build args (requires runtime injection of env vars)
