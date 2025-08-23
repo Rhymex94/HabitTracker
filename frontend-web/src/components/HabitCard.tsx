@@ -27,7 +27,11 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 	};
 
 	const isHabitCompleted = () => {
-		return getProgress() >= habit.target;
+		// TODO: Frontend shouldn't need to know this logic. Move to backend instead.
+		if (habit.type == "above") {
+			return getProgress() >= habit.target;
+		}
+		return getProgress() <= habit.target;
 	};
 
 	return (
