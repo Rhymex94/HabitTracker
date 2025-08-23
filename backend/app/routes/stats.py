@@ -79,40 +79,6 @@ def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
     
     return streak
 
-    for entry in progress:
-        if entry.date < current_range_start:
-            # Outside of the range.
-
-            if (
-                current_range_value < habit.target_value
-                and current_range_start != present_start
-            ):
-                # Did not reach the goal, and it's not the present range.
-                return streak
-
-            if current_range_value >= habit.target_value:
-                streak += 1
-
-            current_range_value = 0
-            current_range_start, _ = get_date_range(
-                current_range_start - timedelta(days=1), habit.frequency
-            )
-
-            # Sanity check: is the current entry at least within this next range?
-            if entry.date < current_range_start:
-                # If not, the streak ends here.
-                return streak
-
-        # Otherwise, we're within the period (could be the first in the new period).
-        current_range_value += entry.value
-
-    # Final check. In case the streak is unbroken from the beginning.
-    if current_range_value >= habit.target_value:
-        streak += 1
-
-    return streak
-
-
 # Endpoints
 
 
