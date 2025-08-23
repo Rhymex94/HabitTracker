@@ -46,13 +46,14 @@ def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
     progress_by_period = {}
     progress_by_period[current_range_start] = 0
 
+    start_date_period, _ = get_date_range(habit.start_date, habit.frequency)
+
     for entry in progress:
         period_start, _ = get_date_range(entry.date, habit.frequency)
         progress_by_period.setdefault(period_start, 0)
         progress_by_period[period_start] += entry.value
 
-
-    while current_range_start >= habit.start_date:
+    while current_range_start >= start_date_period:
         current_value = progress_by_period.get(current_range_start, 0)
 
         if habit.type == HabitType.ABOVE:
@@ -61,7 +62,7 @@ def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
             success = current_value <= habit.target_value
         else:
             raise ValueError(f"Unknown habit type {habit.type}")
-        
+
         if not success and current_range_start != present_start:
             break
 
@@ -70,14 +71,13 @@ def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
         else:
             # Not successful in the present period (but it's still onging).
             pass
-            
+
         # Move backwards one period.
         current_range_start, _ = get_date_range(
             current_range_start - timedelta(days=1), habit.frequency
         )
     
     return streak
-
 
     for entry in progress:
         if entry.date < current_range_start:
