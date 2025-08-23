@@ -36,7 +36,12 @@ def _make_entries(dates_and_values):
 
 
 def test_calculate_streak_daily_above():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=10)
+    habit = MockHabit(
+        HabitFrequency.DAILY,
+        HabitType.ABOVE,
+        target_value=10,
+        start_date=date.today() - timedelta(days=5),
+    )
     today = date.today()
 
     # Entries exactly meeting target yesterday and day before, but not today yet
@@ -53,7 +58,12 @@ def test_calculate_streak_daily_above():
 
 
 def test_calculate_streak_daily_above_with_today_entry():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=10)
+    habit = MockHabit(
+        HabitFrequency.DAILY,
+        HabitType.ABOVE,
+        target_value=10,
+        start_date=date.today() - timedelta(days=5),
+    )
     today = date.today()
 
     entries = _make_entries(
@@ -70,14 +80,19 @@ def test_calculate_streak_daily_above_with_today_entry():
 
 
 def test_calculate_streak_daily_below():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.BELOW, target_value=1)
+    habit = MockHabit(
+        HabitFrequency.DAILY,
+        HabitType.BELOW,
+        target_value=1,
+        start_date=date.today() - timedelta(days=5),
+    )
     today = date.today()
 
     entries = _make_entries(
         [
-            (today - timedelta(days=1), 1),
-            (today - timedelta(days=2), 1),
-            (today - timedelta(days=3), 0),  # missed day breaks streak
+            (today, 1),  # At target value. Is considered success.
+            # Missing entry in between. Considered success.
+            (today - timedelta(days=2), 2),  # missed day breaks streak
         ]
     )
 
@@ -86,7 +101,12 @@ def test_calculate_streak_daily_below():
 
 
 def test_calculate_streak_weekly():
-    habit = MockHabit(HabitFrequency.WEEKLY, HabitType.ABOVE, target_value=5)
+    habit = MockHabit(
+        HabitFrequency.WEEKLY,
+        HabitType.ABOVE,
+        target_value=5,
+        start_date=date.today() - timedelta(days=14),
+    )
     today = date.today()
     # Let's assume weeks start on Monday, create entries for last two weeks hitting targets
     current_week_start, _ = get_date_range(today, HabitFrequency.WEEKLY)
@@ -109,7 +129,12 @@ def test_calculate_streak_weekly():
 
 
 def test_calculate_streak_break_in_streak():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=5)
+    habit = MockHabit(
+        HabitFrequency.DAILY,
+        HabitType.ABOVE,
+        target_value=5,
+        start_date=date.today() - timedelta(days=5),
+    )
     today = date.today()
 
     entries = _make_entries(
@@ -125,7 +150,9 @@ def test_calculate_streak_break_in_streak():
 
 
 def test_calculate_streak_empty_progress():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=5)
+    habit = MockHabit(
+        HabitFrequency.DAILY, HabitType.ABOVE, target_value=5, start_date=date.today()
+    )
     entries = []
 
     streak = calculate_streak(habit, entries)
@@ -133,7 +160,12 @@ def test_calculate_streak_empty_progress():
 
 
 def test_binary_habit_done_then_undone():
-    habit = MockHabit(HabitFrequency.DAILY, HabitType.ABOVE, target_value=1)
+    habit = MockHabit(
+        HabitFrequency.DAILY,
+        HabitType.ABOVE,
+        target_value=1,
+        start_date=date.today() - timedelta(days=2),
+    )
     today = date.today()
 
     entries = _make_entries(

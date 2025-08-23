@@ -1,3 +1,4 @@
+from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 
 from app.enums import HabitFrequency, HabitType
@@ -32,6 +33,8 @@ class Habit(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    start_date = db.Column(db.Date, nullable=False, default=date.today)
 
 
 class ProgressEntry(db.Model):

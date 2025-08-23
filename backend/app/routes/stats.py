@@ -43,6 +43,42 @@ def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
     current_range_start = present_start
     current_range_value = 0
 
+    progress_by_period = {}
+    progress_by_period[current_range_start] = 0
+
+    for entry in progress:
+        period_start, _ = get_date_range(entry.date, habit.frequency)
+        progress_by_period.setdefault(period_start, 0)
+        progress_by_period[period_start] += entry.value
+
+
+    while current_range_start >= habit.start_date:
+        current_value = progress_by_period.get(current_range_start, 0)
+
+        if habit.type == HabitType.ABOVE:
+            success = current_value >= habit.target_value
+        elif habit.type == HabitType.BELOW:
+            success = current_value <= habit.target_value
+        else:
+            raise ValueError(f"Unknown habit type {habit.type}")
+        
+        if not success and current_range_start != present_start:
+            break
+
+        if success:
+            streak += 1
+        else:
+            # Not successful in the present period (but it's still onging).
+            pass
+            
+        # Move backwards one period.
+        current_range_start, _ = get_date_range(
+            current_range_start - timedelta(days=1), habit.frequency
+        )
+    
+    return streak
+
+
     for entry in progress:
         if entry.date < current_range_start:
             # Outside of the range.
@@ -83,13 +119,14 @@ def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
 @stats_bp.route("", methods=["GET"])
 @token_required
 def get_stats():
+    streaks = {}
 
     # TODO: Getting a habit_dict of all habits is probably a common pattern.
     #   Consider creating a utility function of this instead.
     habits = Habit.query.filter_by(user_id=request.user_id).all()
     habit_dict = {}
     for habit in habits:
-        habit_dict[habit.id] = habit
+        habit_dict[habit.id] = {"habit": habit, "progress_entries": []}
 
     progress_entries = (
         db.session.query(ProgressEntry.habit_id, ProgressEntry.date, ProgressEntry.value)
@@ -98,13 +135,9 @@ def get_stats():
         .all()
     )
 
-    streaks = {}
 
     current_habit = None
     habit_index = None
-
-    # TODO: Would it be cleaner to just run through once, assign the indices to a dict,
-    #   and call for each Habit?
     for i in range(0, len(progress_entries)):
         entry = progress_entries[i]
         if current_habit is None:
@@ -112,17 +145,15 @@ def get_stats():
             habit_index = i
 
         if current_habit != entry.habit_id:
-            streaks[current_habit] = calculate_streak(
-                habit_dict[current_habit], progress_entries[habit_index:i]
-            )
+            habit_dict[current_habit]["progress_entries"] = progress_entries[habit_index:i]
             habit_index = i
             current_habit = entry.habit_id
+    
+    habit_dict[current_habit]["progress_entries"] = progress_entries[habit_index:]
 
-    # The last habit on the list never gets a chance to be called. Call it here, if it
-    #   exists.
-    if current_habit:
-        streaks[current_habit] = calculate_streak(
-            habit_dict[current_habit], progress_entries[habit_index:]
-        )
+    for habit_obj in habit_dict.values():
+        habit = habit_obj["habit"]
+        entries = habit_obj["progress_entries"]
+        streaks[habit.id] = calculate_streak(habit, entries)
 
     return jsonify(streaks)
