@@ -2,8 +2,9 @@ import pytest
 from datetime import date, timedelta
 
 from app.enums import HabitFrequency, HabitType
-from app.models import Habit, ProgressEntry
-from app.routes.stats import calculate_streak, get_date_range
+from app.models import ProgressEntry
+from app.routes.stats import calculate_streak
+from app.utils import get_date_range
 from tests.mocks import MockHabit, MockProgressEntry
 
 

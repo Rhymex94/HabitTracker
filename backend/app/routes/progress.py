@@ -1,8 +1,10 @@
+from datetime import date, datetime
 from flask import Blueprint, request, jsonify
-from datetime import datetime
 from sqlalchemy.exc import IntegrityError
+
 from app.models import db, Habit, ProgressEntry
 from app.auth import token_required
+from app.utils import get_date_range, get_habit_dict
 
 progress_bp = Blueprint("progress", __name__, url_prefix="/progress")
 
@@ -63,6 +65,7 @@ def get_progress_entries():
     habit_id = request.args.get("habit_id", type=int)
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
+    include_all = request.args.get("all", "false").lower() == "true"
 
     # First verify that the habit belongs to the user
     if habit_id:
@@ -78,6 +81,7 @@ def get_progress_entries():
     else:
         query = query.join(Habit).filter(Habit.user_id == request.user_id)
 
+    # Apply explicit date filters if given
     if start_date:
         try:
             start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -93,6 +97,23 @@ def get_progress_entries():
             return jsonify({"error": "Invalid end_date format. Use YYYY-MM-DD."}), 400
 
     entries = query.all()
+    if not include_all:
+        habit_dict = get_habit_dict(request.user_id)
+
+        today = date.today()
+
+        ranges = {
+            hid: get_date_range(today, h["habit"].frequency)
+            for hid, h in habit_dict.items()
+        }
+
+        entries = [
+            entry
+            for entry in entries
+            if entry.habit_id in ranges
+            and ranges[entry.habit_id][0] <= entry.date <= ranges[entry.habit_id][1]
+        ]
+
     return jsonify(
         [
             {

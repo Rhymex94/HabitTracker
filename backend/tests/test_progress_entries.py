@@ -26,7 +26,9 @@ def test_create_progress_entry(client, test_habits, test_auth_headers):
 def test_get_progress_entries(client, progress_entries, test_auth_headers):
     habit_id = progress_entries[0].habit_id
 
-    response = client.get(f"/api/progress?habit_id={habit_id}", headers=test_auth_headers)
+    response = client.get(
+        f"/api/progress?habit_id={habit_id}&all=true", headers=test_auth_headers
+    )
     assert response.status_code == 200
 
     data = response.get_json()
@@ -42,7 +44,7 @@ def test_get_progress_entries_date_filter(client, progress_entries, test_auth_he
     habit_id = progress_entries[0].habit_id
 
     response = client.get(
-        f"/api/progress?habit_id={habit_id}&start_date=2024-05-02&end_date=2024-05-03",
+        f"/api/progress?habit_id={habit_id}&start_date=2024-05-02&end_date=2024-05-03&all=true",
         headers=test_auth_headers,
     )
     assert response.status_code == 200

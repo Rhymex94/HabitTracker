@@ -30,33 +30,7 @@ const HabitList: React.FC<HabitListProps> = ({ habits, progress, stats }) => {
 			if (habit == undefined) {
 				continue;
 			}
-
-			// Determine which progress entries we want to keep.
-			let cutOffDay = new Date();
-			cutOffDay.setHours(0, 0, 0, 0);
-
-			switch (habit.frequency) {
-				case "weekly": {
-					// TODO: change to actual weeks, not just 7 day periods.
-					cutOffDay.setDate(cutOffDay.getDate() - 7);
-					break;
-				}
-				case "monthly": {
-					// TODO: change to follow actual months, not just 30 day periods.
-					cutOffDay.setDate(cutOffDay.getDate() - 30);
-					break;
-				}
-				case "yearly": {
-					// TODO: change to follow actual years, not just 365 day periods.
-					cutOffDay.setDate(cutOffDay.getDate() - 365);
-					break;
-				}
-			}
-
-			let progDate = new Date(prog.date);
-			if (progDate >= cutOffDay) {
-				progressMap.get(prog.habit_id)!.push(prog);
-			}
+			progressMap.get(prog.habit_id)!.push(prog);
 		}
 		return progressMap;
 	}, [habits, progress]);

@@ -19,6 +19,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 	};
 
 	const getProgress = () => {
+		// TODO: getProgress is called multiple times. Could cache the result somewhere.
 		let totalValue = 0;
 		for (let prog of progress) {
 			totalValue += prog.value;
