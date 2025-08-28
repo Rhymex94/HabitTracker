@@ -21,6 +21,7 @@ class Habit(db.Model):
     # Target definition
     frequency = db.Column(db.Enum(HabitFrequency), nullable=False)
     target_value = db.Column(db.Float, nullable=True)
+    unit = db.Column(db.String(20), nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     # Use the below to get access directly to the user.
