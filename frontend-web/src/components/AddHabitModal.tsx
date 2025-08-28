@@ -86,7 +86,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 						<input
 							type="number"
 							id="target"
-							min="1"
+							min="0"
 							value={target}
 							onChange={(e) => setTarget(e.target.value)}
 							required

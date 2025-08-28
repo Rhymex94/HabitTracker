@@ -15,7 +15,7 @@ def create_habit():
     frequency_ = data.get("frequency")
     target_value = data.get("target")
 
-    if not all([name, type_, target_value]):
+    if not all([name, type_, (target_value is not None)]):
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
@@ -23,6 +23,14 @@ def create_habit():
         frequency = HabitFrequency[frequency_.upper()]
     except (KeyError, ValueError):
         return jsonify({"error": "Invalid type or frequency value"}), 400
+
+    if habit_type == HabitType.ABOVE and target_value == 0:
+        return (
+            jsonify(
+                {"error": "Above -type habits must have a target value higher than 0."}
+            ),
+            400,
+        )
 
     new_habit = Habit(
         name=name,
