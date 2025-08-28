@@ -35,7 +35,8 @@ def get_stats():
             habit_index = i
             current_habit = entry.habit_id
 
-    habit_dict[current_habit]["progress_entries"] = progress_entries[habit_index:]
+    if current_habit:
+        habit_dict[current_habit]["progress_entries"] = progress_entries[habit_index:]
 
     for habit_obj in habit_dict.values():
         habit = habit_obj["habit"]

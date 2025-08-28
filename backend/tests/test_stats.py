@@ -224,3 +224,11 @@ def test_get_stats(client, mock_habits, mock_progress_entries, monkeypatch, test
     assert res.status_code == 200
     data = res.get_json()
     assert data == {"1": 99, "2": 99}
+
+
+def test_get_stats_without_habits(client, test_auth_headers):
+    res = client.get("/api/stats", headers=test_auth_headers)
+
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data == {}
