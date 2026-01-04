@@ -8,6 +8,7 @@ Feature todos:
 -   Implement a stats view of habits:
     -   Percentage of completed days/weeks/months/years
 -   Implement "units" (for quantitative habits. Minutes, repetitions etc.)
+    -   Model field added. Implement changes to the UI and the API
 -   Add a checkbox to control whether the user wants to add a custom target value (not 1)
 -   Display server-side validation errors in the UI
 
