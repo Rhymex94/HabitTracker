@@ -14,6 +14,7 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
         habit.frequency
     );
     const [target, setTarget] = useState(habit.target.toString());
+    const [unit, setUnit] = useState(habit.unit || "");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,6 +23,7 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
             type,
             frequency,
             target: parseInt(target, 10),
+            unit: unit || undefined,
         });
         onClose();
     };
@@ -84,6 +86,17 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
                             value={target}
                             onChange={(e) => setTarget(e.target.value)}
                             required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="unit">Unit (optional)</label>
+                        <input
+                            type="text"
+                            id="unit"
+                            placeholder="e.g., km, minutes, reps"
+                            value={unit}
+                            onChange={(e) => setUnit(e.target.value)}
+                            maxLength={20}
                         />
                     </div>
                     <div className="modal-actions">

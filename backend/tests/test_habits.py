@@ -116,3 +116,72 @@ def test_delete_habit_cascades_progress_entries(
             habit_id=habit_to_delete.id
         ).count()
         assert entries_remaining == 0
+
+
+def test_create_and_retrieve_habit_with_unit(client, test_user, test_auth_headers):
+    # Create a habit with a unit
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Run",
+            "type": "above",
+            "target": 5,
+            "frequency": "daily",
+            "unit": "km",
+            "user_id": test_user.id,
+        },
+    )
+
+    assert response.status_code == 201
+    data = response.get_json()
+    assert data["name"] == "Run"
+    assert data["type"] == "above"
+    assert data["target"] == 5
+    assert data["frequency"] == "daily"
+    assert data["unit"] == "km"
+
+    habit_id = data["id"]
+
+    # Retrieve the habit and verify unit is present
+    response = client.get("/api/habits", headers=test_auth_headers)
+    assert response.status_code == 200
+    habits = response.get_json()
+
+    created_habit = next((h for h in habits if h["id"] == habit_id), None)
+    assert created_habit is not None
+    assert created_habit["unit"] == "km"
+
+    # Update the habit with a different unit
+    response = client.patch(
+        f"/api/habits/{habit_id}",
+        headers=test_auth_headers,
+        json={"unit": "miles"},
+    )
+    assert response.status_code == 200
+
+    # Verify the update worked
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    updated_habit = next((h for h in habits if h["id"] == habit_id), None)
+    assert updated_habit["unit"] == "miles"
+
+
+def test_create_habit_without_unit(client, test_user, test_auth_headers):
+    # Create a habit without a unit (should be None/null)
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Meditate",
+            "type": "above",
+            "target": 1,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+
+    assert response.status_code == 201
+    data = response.get_json()
+    assert data["name"] == "Meditate"
+    assert data["unit"] is None

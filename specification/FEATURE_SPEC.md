@@ -69,7 +69,6 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [x] Frequency (DAILY, WEEKLY, MONTHLY, YEARLY)
 - [x] Target value (numeric, can be 0 for BELOW habits)
 - [x] Unit (string, e.g., "minutes", "km", "reps", "cups")
-  - Note: Field exists in database but not exposed in UI
 - [x] Start date (when habit tracking begins)
 - [x] User association (foreign key)
 
@@ -87,7 +86,7 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [x] Add Habit modal with form
 - [x] Edit Habit modal with pre-filled values
 - [x] Delete confirmation modal
-- [ ] Unit field input in Add/Edit modals
+- [x] Unit field input in Add/Edit modals
 - [ ] Visual distinction for ABOVE vs BELOW habits
 - [ ] Custom target checkbox (toggle between binary and quantitative)
 
@@ -114,7 +113,7 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [x] "Mark Complete" modal for binary habits
 - [x] "Add Progress" modal for quantitative habits
 - [x] Display current progress value in habit card
-- [ ] Display units alongside progress values
+- [x] Display units alongside progress values
 - [ ] Visual progress indicators (progress bars, percentages)
 
 ---
@@ -155,14 +154,13 @@ A habit tracking application designed to help users create, monitor, and maintai
 - Docker containerization
 - Database migrations
 - Test coverage for core features
+- Unit field (input, storage, display)
 
 ### Partially Implemented
-- Unit field (database only, not in UI)
 - BELOW habit type (logic exists, UI doesn't clarify)
 - Progress filtering (backend supports it, frontend uses defaults)
 
 ### Not Implemented
-- **Unit display and input**: Add unit field to Add/Edit/Display
 - **Stats view**: Percentage completion rates
 - **Future date validation**: Block future progress entries
 - **Server-side error display**: Show API validation errors in UI
@@ -306,7 +304,6 @@ A habit tracking application designed to help users create, monitor, and maintai
 4. **Cascading Deletes**: Deleting a habit removes all associated progress entries to maintain data integrity.
 
 ### Known Issues
-- Unit field exists but isn't wired to UI
 - Future-dated progress entries not validated
 - API validation errors not shown to users
 - Habit completion logic duplicated in frontend (should be backend-only)
@@ -320,4 +317,5 @@ A habit tracking application designed to help users create, monitor, and maintai
 - **v0.3** (2025-08-21): ABOVE/BELOW type system implemented
 - **v0.4** (2025-08-23): Streak tracking with start_date
 - **v0.5** (2025-08-28): Unit field added to Habit model
+- **v0.6** (2026-01-04): Unit field fully integrated (UI input, API, display, tests)
 - **Current**: Core functionality complete, UI enhancements needed

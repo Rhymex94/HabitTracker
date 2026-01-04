@@ -4,6 +4,7 @@ export interface Habit {
 	type: "above" | "below"; // Adjust as per your backend enum
 	frequency: "daily" | "weekly" | "monthly" | "yearly"; // Adjust as per your backend enum
 	target: number;
+	unit?: string;
 	created_at: string;
 	updated_at: string;
 }

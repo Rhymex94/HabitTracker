@@ -2,13 +2,28 @@
 
 Monorepo for both the backend and frontend of the habit tracker app.
 
+
+## Useful commands
+Run the backend in docker with:
+docker compose up
+Note: make sure you're in the project root when doing this.
+
+Run the frontend with 
+npm run dev
+Note: make sure you're in the frontend-web directory when doing this.
+
+To run backend tests:
+docker exec <container-name> pytest (-k <test-name>)
+E.g.
+docker exec habittracker-backend-1 pytest
+docker exec habittracker-backend-1 pytest -k test_create_habit_with_zero_target_value
+
+
 TODOs:
 
 Feature todos:
 -   Implement a stats view of habits:
     -   Percentage of completed days/weeks/months/years
--   Implement "units" (for quantitative habits. Minutes, repetitions etc.)
-    -   Model field added. Implement changes to the UI and the API
 -   Add a checkbox to control whether the user wants to add a custom target value (not 1)
 -   Display server-side validation errors in the UI
 

@@ -15,7 +15,8 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 		useHabitContext();
 
 	const getProgressDisplay = () => {
-		return `${getProgress()}/${habit.target}`;
+		const progressValue = `${getProgress()}/${habit.target}`;
+		return habit.unit ? `${progressValue} ${habit.unit}` : progressValue;
 	};
 
 	const getProgress = () => {

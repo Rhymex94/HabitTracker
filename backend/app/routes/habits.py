@@ -14,6 +14,7 @@ def create_habit():
     type_ = data.get("type")
     frequency_ = data.get("frequency")
     target_value = data.get("target")
+    unit = data.get("unit")
 
     if not all([name, type_, (target_value is not None)]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -37,6 +38,7 @@ def create_habit():
         type=habit_type,
         frequency=frequency,
         target_value=target_value,
+        unit=unit,
         user_id=request.user_id,
     )
 
@@ -51,6 +53,7 @@ def create_habit():
                 "type": new_habit.type.name.lower(),
                 "frequency": new_habit.frequency.name.lower(),
                 "target": new_habit.target_value,
+                "unit": new_habit.unit,
             }
         ),
         201,
@@ -91,6 +94,7 @@ def fetch_habits():
                     "type": habit.type.name.lower(),
                     "frequency": habit.frequency.name.lower(),
                     "target": habit.target_value,
+                    "unit": habit.unit,
                 }
                 for habit in habits
             ]

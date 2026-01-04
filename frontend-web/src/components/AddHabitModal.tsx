@@ -14,6 +14,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 		"daily"
 	);
 	const [target, setTarget] = useState("1");
+	const [unit, setUnit] = useState("");
 
 	if (!isOpen) return null;
 
@@ -24,11 +25,13 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 			type,
 			frequency,
 			target: parseInt(target, 10),
+			unit: unit || undefined,
 		});
 		setName("");
 		setType("above");
 		setFrequency("daily");
 		setTarget("1");
+		setUnit("");
 		onClose();
 	};
 
@@ -90,6 +93,17 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 							value={target}
 							onChange={(e) => setTarget(e.target.value)}
 							required
+						/>
+					</div>
+					<div className="form-group">
+						<label htmlFor="unit">Unit (optional)</label>
+						<input
+							type="text"
+							id="unit"
+							placeholder="e.g., km, minutes, reps"
+							value={unit}
+							onChange={(e) => setUnit(e.target.value)}
+							maxLength={20}
 						/>
 					</div>
 					<div className="modal-actions">
