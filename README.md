@@ -24,7 +24,6 @@ TODOs:
 Feature todos:
 -   Implement a stats view of habits:
     -   Percentage of completed days/weeks/months/years
--   Add a checkbox to control whether the user wants to add a custom target value (not 1)
 -   Display server-side validation errors in the UI
 
 Technical todos:

@@ -13,6 +13,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 	const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">(
 		"daily"
 	);
+	const [isQuantitative, setIsQuantitative] = useState(false);
 	const [target, setTarget] = useState("1");
 	const [unit, setUnit] = useState("");
 
@@ -24,12 +25,13 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 			name,
 			type,
 			frequency,
-			target: parseInt(target, 10),
-			unit: unit || undefined,
+			target: isQuantitative ? parseInt(target, 10) : 1,
+			unit: isQuantitative ? (unit || undefined) : undefined,
 		});
 		setName("");
 		setType("above");
 		setFrequency("daily");
+		setIsQuantitative(false);
 		setTarget("1");
 		setUnit("");
 		onClose();
@@ -84,28 +86,42 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onSubmit
 							<option value="yearly">Yearly</option>
 						</select>
 					</div>
-					<div className="form-group">
-						<label htmlFor="target">Target Value</label>
-						<input
-							type="number"
-							id="target"
-							min="0"
-							value={target}
-							onChange={(e) => setTarget(e.target.value)}
-							required
-						/>
+					<div className="checkbox-group">
+						<label>
+							<input
+								type="checkbox"
+								checked={isQuantitative}
+								onChange={(e) => setIsQuantitative(e.target.checked)}
+							/>
+							Quantitative habit (has numeric target)
+						</label>
 					</div>
-					<div className="form-group">
-						<label htmlFor="unit">Unit (optional)</label>
-						<input
-							type="text"
-							id="unit"
-							placeholder="e.g., km, minutes, reps"
-							value={unit}
-							onChange={(e) => setUnit(e.target.value)}
-							maxLength={20}
-						/>
-					</div>
+					{isQuantitative && (
+						<>
+							<div className="form-group">
+								<label htmlFor="target">Target Value</label>
+								<input
+									type="number"
+									id="target"
+									min="1"
+									value={target}
+									onChange={(e) => setTarget(e.target.value)}
+									required
+								/>
+							</div>
+							<div className="form-group">
+								<label htmlFor="unit">Unit (optional)</label>
+								<input
+									type="text"
+									id="unit"
+									placeholder="e.g., km, minutes, reps"
+									value={unit}
+									onChange={(e) => setUnit(e.target.value)}
+									maxLength={20}
+								/>
+							</div>
+						</>
+					)}
 					<div className="modal-actions">
 						<button
 							type="button"

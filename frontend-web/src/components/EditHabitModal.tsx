@@ -13,6 +13,7 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
     const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">(
         habit.frequency
     );
+    const [isQuantitative, setIsQuantitative] = useState(habit.target > 1);
     const [target, setTarget] = useState(habit.target.toString());
     const [unit, setUnit] = useState(habit.unit || "");
 
@@ -22,8 +23,8 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
             name,
             type,
             frequency,
-            target: parseInt(target, 10),
-            unit: unit || undefined,
+            target: isQuantitative ? parseInt(target, 10) : 1,
+            unit: isQuantitative ? (unit || undefined) : undefined,
         });
         onClose();
     };
@@ -77,28 +78,42 @@ const EditHabitModal: React.FC<EditHabitModalProps> = ({ habit, onClose, onSubmi
                             <option value="yearly">Yearly</option>
                         </select>
                     </div>
-                    <div className="form-group">
-                        <label htmlFor="target">Target Value</label>
-                        <input
-                            type="number"
-                            id="target"
-                            min="1"
-                            value={target}
-                            onChange={(e) => setTarget(e.target.value)}
-                            required
-                        />
+                    <div className="checkbox-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={isQuantitative}
+                                onChange={(e) => setIsQuantitative(e.target.checked)}
+                            />
+                            Quantitative habit (has numeric target)
+                        </label>
                     </div>
-                    <div className="form-group">
-                        <label htmlFor="unit">Unit (optional)</label>
-                        <input
-                            type="text"
-                            id="unit"
-                            placeholder="e.g., km, minutes, reps"
-                            value={unit}
-                            onChange={(e) => setUnit(e.target.value)}
-                            maxLength={20}
-                        />
-                    </div>
+                    {isQuantitative && (
+                        <>
+                            <div className="form-group">
+                                <label htmlFor="target">Target Value</label>
+                                <input
+                                    type="number"
+                                    id="target"
+                                    min="1"
+                                    value={target}
+                                    onChange={(e) => setTarget(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="unit">Unit (optional)</label>
+                                <input
+                                    type="text"
+                                    id="unit"
+                                    placeholder="e.g., km, minutes, reps"
+                                    value={unit}
+                                    onChange={(e) => setUnit(e.target.value)}
+                                    maxLength={20}
+                                />
+                            </div>
+                        </>
+                    )}
                     <div className="modal-actions">
                         <button
                             type="button"

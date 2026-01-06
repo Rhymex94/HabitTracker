@@ -55,7 +55,6 @@ A habit tracking application designed to help users create, monitor, and maintai
   - Example: "Run at least 5km" (success when value >= 5)
 - [x] **BELOW Type**: Habit is successful when progress <= target (inverted)
   - Example: "Limit coffee to 2 cups" (success when value <= 2)
-  - [ ] Note: UI doesn't clearly distinguish BELOW habits
 
 #### 2.2 Time Frames (Frequencies)
 - [x] **Daily**: Progress tracked and reset each day
@@ -87,8 +86,7 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [x] Edit Habit modal with pre-filled values
 - [x] Delete confirmation modal
 - [x] Unit field input in Add/Edit modals
-- [ ] Visual distinction for ABOVE vs BELOW habits
-- [ ] Custom target checkbox (toggle between binary and quantitative)
+- [x] Quantitative checkbox (toggle between binary and quantitative habits)
 
 ---
 
@@ -157,14 +155,12 @@ A habit tracking application designed to help users create, monitor, and maintai
 - Unit field (input, storage, display)
 
 ### Partially Implemented
-- BELOW habit type (logic exists, UI doesn't clarify)
 - Progress filtering (backend supports it, frontend uses defaults)
 
 ### Not Implemented
 - **Stats view**: Percentage completion rates
 - **Future date validation**: Block future progress entries
 - **Server-side error display**: Show API validation errors in UI
-- **Custom target toggle**: Checkbox to switch between binary and quantitative
 - **Visual indicators**: Progress bars, completion percentages
 - **Historical analytics**: Graphs, trends, best streaks
 
@@ -248,6 +244,7 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [ ] Habit correlation insights
 
 ### UX Improvements
+- [ ] Enhanced visual distinction for ABOVE vs BELOW habits (icons, colors, clearer labels)
 - [ ] Drag-and-drop habit reordering
 - [ ] Bulk operations (mark multiple habits complete)
 - [ ] Undo/redo functionality
@@ -318,4 +315,5 @@ A habit tracking application designed to help users create, monitor, and maintai
 - **v0.4** (2025-08-23): Streak tracking with start_date
 - **v0.5** (2025-08-28): Unit field added to Habit model
 - **v0.6** (2026-01-04): Unit field fully integrated (UI input, API, display, tests)
+- **v0.7** (2026-01-04): Quantitative checkbox toggle for habit creation/editing
 - **Current**: Core functionality complete, UI enhancements needed
