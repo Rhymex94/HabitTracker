@@ -97,7 +97,7 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [x] Associate progress with specific date
 - [x] Default to current date if not specified
 - [x] Support for numeric values (including decimals)
-- [ ] Validation: Prevent future-dated entries
+- [x] Validation: Prevent future-dated entries
 - [ ] Backend-driven completion status (currently frontend logic)
 
 #### 3.2 Progress Entry Management
@@ -159,7 +159,6 @@ A habit tracking application designed to help users create, monitor, and maintai
 
 ### Not Implemented
 - **Stats view**: Percentage completion rates
-- **Future date validation**: Block future progress entries
 - **Server-side error display**: Show API validation errors in UI
 - **Visual indicators**: Progress bars, completion percentages
 - **Historical analytics**: Graphs, trends, best streaks
@@ -301,7 +300,6 @@ A habit tracking application designed to help users create, monitor, and maintai
 4. **Cascading Deletes**: Deleting a habit removes all associated progress entries to maintain data integrity.
 
 ### Known Issues
-- Future-dated progress entries not validated
 - API validation errors not shown to users
 - Habit completion logic duplicated in frontend (should be backend-only)
 
@@ -316,4 +314,5 @@ A habit tracking application designed to help users create, monitor, and maintai
 - **v0.5** (2025-08-28): Unit field added to Habit model
 - **v0.6** (2026-01-04): Unit field fully integrated (UI input, API, display, tests)
 - **v0.7** (2026-01-04): Quantitative checkbox toggle for habit creation/editing
+- **v0.8** (2026-01-06): Future-dated progress entry validation with dynamic test
 - **Current**: Core functionality complete, UI enhancements needed

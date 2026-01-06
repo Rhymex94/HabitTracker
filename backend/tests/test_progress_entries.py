@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from app import db
 from app.models import ProgressEntry
 
@@ -101,3 +102,13 @@ def test_delete_nonexistent_progress_entry(client, test_auth_headers):
     )
     assert response.status_code == 404
     assert "not found" in response.get_json()["error"].lower()
+
+
+def test_create_progress_entry_future_date(client, test_habits, test_auth_headers):
+    habit = test_habits[0]
+    future_date = (date.today() + timedelta(days=1)).isoformat()
+    payload = {"habit_id": habit.id, "date": future_date, "value": 5}
+
+    response = client.post("/api/progress", json=payload, headers=test_auth_headers)
+    assert response.status_code == 400
+    assert "future" in response.get_json()["error"].lower()

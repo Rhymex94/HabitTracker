@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 
@@ -28,12 +28,14 @@ def add_progress():
         entry_date = (
             datetime.strptime(date_str, "%Y-%m-%d").date()
             if date_str
-            else datetime.utcnow().date()
+            else datetime.now(timezone.utc).date()
         )
     except ValueError:
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
 
-    # TODO: Add validation that the date cannot be in the future.
+    # Validate that the date is not in the future
+    if entry_date > datetime.now(timezone.utc).date():
+        return jsonify({"error": "Progress entry date cannot be in the future"}), 400
 
     if not isinstance(value, (int, float)):
         return jsonify({"error": "target value is required."}), 400
