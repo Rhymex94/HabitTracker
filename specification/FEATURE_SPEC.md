@@ -112,7 +112,9 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [x] "Add Progress" modal for quantitative habits
 - [x] Display current progress value in habit card
 - [x] Display units alongside progress values
-- [ ] Visual progress indicators (progress bars, percentages)
+- [x] Visual progress indicators
+  - [x] Checkbox icons for binary habits (empty/checked)
+  - [x] Progress bars for quantitative habits with percentage fill
 
 ---
 
@@ -160,7 +162,6 @@ A habit tracking application designed to help users create, monitor, and maintai
 ### Not Implemented
 - **Stats view**: Percentage completion rates
 - **Server-side error display**: Show API validation errors in UI
-- **Visual indicators**: Progress bars, completion percentages
 - **Historical analytics**: Graphs, trends, best streaks
 
 ---
@@ -315,4 +316,5 @@ A habit tracking application designed to help users create, monitor, and maintai
 - **v0.6** (2026-01-04): Unit field fully integrated (UI input, API, display, tests)
 - **v0.7** (2026-01-04): Quantitative checkbox toggle for habit creation/editing
 - **v0.8** (2026-01-06): Future-dated progress entry validation with dynamic test
-- **Current**: Core functionality complete, UI enhancements needed
+- **v0.9** (2026-01-07): Visual progress indicators (checkboxes for binary, progress bars for quantitative)
+- **Current**: Core functionality complete, analytics features pending

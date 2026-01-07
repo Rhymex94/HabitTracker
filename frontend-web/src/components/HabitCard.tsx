@@ -2,7 +2,7 @@ import React from 'react';
 import './HabitCard.css';
 import type { Habit, Progress } from "../types";
 import { useHabitContext } from "../context/HabitContext";
-import { FaCheck, FaFire } from "react-icons/fa";
+import { FaCheck, FaFire, FaRegSquare, FaCheckSquare } from "react-icons/fa";
 
 interface HabitCardProps {
 	habit: Habit;
@@ -15,8 +15,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 		useHabitContext();
 
 	const getProgressDisplay = () => {
-		const progressValue = `${getProgress()}/${habit.target}`;
-		return habit.unit ? `${progressValue} ${habit.unit}` : progressValue;
+		return `${getProgress()}/${habit.target}`;
 	};
 
 	const getProgress = () => {
@@ -36,6 +35,30 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 		return getProgress() <= habit.target;
 	};
 
+	const isBinaryHabit = () => {
+		return habit.target === 0 || habit.target === 1;
+	};
+
+	const getProgressPercentage = () => {
+		const progressRatio = Math.min((getProgress() / habit.target) * 100, 100);
+
+		if (habit.type === "above") {
+			// ABOVE: Empty bar at 0, fills up as we reach target (blue->green)
+			return progressRatio;
+		} else {
+			// BELOW: Full bar at 0, empties as we approach target (blue->green)
+			if (habit.target === 0) {
+				// For target 0, show empty bar if any progress (failure)
+				return getProgress() > 0 ? 0 : 100;
+			}
+			return 100 - progressRatio;
+		}
+	};
+
+	const isBelowHabitExceeded = () => {
+		return habit.type === "below" && getProgress() > habit.target;
+	};
+
 	return (
 		<div className="habit-card">
 			<div className="habit-card-content">
@@ -46,14 +69,42 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 				</p>
 			</div>
 			<div className="progress-container">
-				<label>{getProgressDisplay()}</label>
-				{isHabitCompleted() && <FaCheck className="habit-check-icon" />}
+				{isBinaryHabit() ? (
+					<div className="binary-progress">
+						<div></div>
+						<div className="binary-progress-content">
+							{isHabitCompleted() ? (
+								<FaCheckSquare className="habit-checkbox-icon completed" />
+							) : (
+								<FaRegSquare className="habit-checkbox-icon" />
+							)}
+							<label>{getProgressDisplay()}</label>
+						</div>
+						<span></span>
+					</div>
+				) : (
+					<div className="quantitative-progress">
+						<div className="progress-check-column">
+							{isHabitCompleted() && <FaCheck className="habit-check-icon" />}
+						</div>
+						<div className="progress-bar-container">
+							<div
+								className={`progress-bar-fill ${habit.type === "below" ? "below-type" : ""}`}
+								style={{ width: `${getProgressPercentage()}%` }}
+							/>
+							<span className={`progress-text ${isBelowHabitExceeded() ? "exceeded" : ""}`}>
+								{getProgressDisplay()}
+							</span>
+						</div>
+						<span className="progress-unit" title={habit.unit || ""}>{habit.unit || ""}</span>
+					</div>
+				)}
 			</div>
 			<div className="streak-container">
-				{stats !== undefined && stats !== 0 && <label>({stats})</label>}
 				{stats !== undefined && stats !== 0 && (
 					<FaFire className="streak-fire-icon" />
 				)}
+				{stats !== undefined && stats !== 0 && <label>({stats})</label>}
 			</div>
 			<div className="habit-buttons-container">
 				<button
