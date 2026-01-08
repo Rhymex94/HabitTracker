@@ -37,6 +37,27 @@ def get_date_range(current_date: date, frequency: HabitFrequency) -> tuple[date,
     return start, end
 
 
+def calculate_habit_completion(habit: Habit, progress_entries: list[ProgressEntry]) -> bool:
+    """
+    Calculate if a habit is completed for the current period.
+
+    Args:
+        habit: The Habit object
+        progress_entries: List of ProgressEntry objects for the current period
+
+    Returns:
+        bool: True if the habit is completed, False otherwise
+    """
+    total_progress = sum(entry.value for entry in progress_entries)
+
+    if habit.type == HabitType.ABOVE:
+        return total_progress >= habit.target_value
+    elif habit.type == HabitType.BELOW:
+        return total_progress <= habit.target_value
+    else:
+        raise ValueError(f"Unknown habit type {habit.type}")
+
+
 def calculate_streak(habit: Habit, progress: list[ProgressEntry]) -> int:
     # Assumes the ProgressEntry list in reverse order: from newest to oldest.
     streak = 0

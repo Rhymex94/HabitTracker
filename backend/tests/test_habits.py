@@ -185,3 +185,292 @@ def test_create_habit_without_unit(client, test_user, test_auth_headers):
     data = response.get_json()
     assert data["name"] == "Meditate"
     assert data["unit"] is None
+
+
+def test_habit_completion_above_type_not_completed(
+    client, app, test_user, test_auth_headers
+):
+    # Create an ABOVE habit with target 5
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Run",
+            "type": "above",
+            "target": 5,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # Add progress less than target (3 < 5)
+    client.post(
+        "/api/progress",
+        headers=test_auth_headers,
+        json={
+            "habit_id": habit_id,
+            "value": 3,
+            "date": datetime.date.today().isoformat(),
+        },
+    )
+
+    # Fetch habits and check completion status
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+
+    assert habit is not None
+    assert habit["is_completed"] is False
+
+
+def test_habit_completion_above_type_completed(
+    client, app, test_user, test_auth_headers
+):
+    # Create an ABOVE habit with target 5
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Run",
+            "type": "above",
+            "target": 5,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # Add progress equal to target (5 = 5)
+    client.post(
+        "/api/progress",
+        headers=test_auth_headers,
+        json={
+            "habit_id": habit_id,
+            "value": 5,
+            "date": datetime.date.today().isoformat(),
+        },
+    )
+
+    # Fetch habits and check completion status
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+
+    assert habit is not None
+    assert habit["is_completed"] is True
+
+
+def test_habit_completion_above_type_exceeded(
+    client, app, test_user, test_auth_headers
+):
+    # Create an ABOVE habit with target 5
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Run",
+            "type": "above",
+            "target": 5,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # Add progress greater than target (7 > 5)
+    client.post(
+        "/api/progress",
+        headers=test_auth_headers,
+        json={
+            "habit_id": habit_id,
+            "value": 7,
+            "date": datetime.date.today().isoformat(),
+        },
+    )
+
+    # Fetch habits and check completion status
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+
+    assert habit is not None
+    assert habit["is_completed"] is True
+
+
+def test_habit_completion_below_type_not_completed(
+    client, app, test_user, test_auth_headers
+):
+    # Create a BELOW habit with target 2
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Limit Coffee",
+            "type": "below",
+            "target": 2,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # Add progress exceeding target (3 > 2)
+    client.post(
+        "/api/progress",
+        headers=test_auth_headers,
+        json={
+            "habit_id": habit_id,
+            "value": 3,
+            "date": datetime.date.today().isoformat(),
+        },
+    )
+
+    # Fetch habits and check completion status
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+
+    assert habit is not None
+    assert habit["is_completed"] is False
+
+
+def test_habit_completion_below_type_completed(
+    client, app, test_user, test_auth_headers
+):
+    # Create a BELOW habit with target 2
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Limit Coffee",
+            "type": "below",
+            "target": 2,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # Add progress at target (2 = 2)
+    client.post(
+        "/api/progress",
+        headers=test_auth_headers,
+        json={
+            "habit_id": habit_id,
+            "value": 2,
+            "date": datetime.date.today().isoformat(),
+        },
+    )
+
+    # Fetch habits and check completion status
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+
+    assert habit is not None
+    assert habit["is_completed"] is True
+
+
+def test_habit_completion_below_type_zero_progress(
+    client, app, test_user, test_auth_headers
+):
+    # Create a BELOW habit with target 2
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Limit Coffee",
+            "type": "below",
+            "target": 2,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # No progress added (0 < 2)
+    # Fetch habits and check completion status
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+
+    assert habit is not None
+    assert habit["is_completed"] is True
+
+
+def test_habit_completion_binary_habit(client, app, test_user, test_auth_headers):
+    # Create a binary habit (target=1)
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Meditate",
+            "type": "above",
+            "target": 1,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # No progress - should not be completed
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+    assert habit["is_completed"] is False
+
+    # Add progress of 1
+    client.post(
+        "/api/progress",
+        headers=test_auth_headers,
+        json={
+            "habit_id": habit_id,
+            "value": 1,
+            "date": datetime.date.today().isoformat(),
+        },
+    )
+
+    # Should now be completed
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+    assert habit["is_completed"] is True
+
+
+def test_habit_completion_target_zero(client, app, test_user, test_auth_headers):
+    # Create a BELOW habit with target 0 (e.g., "No smoking")
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "No Smoking",
+            "type": "below",
+            "target": 0,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # No progress - should be completed
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+    assert habit["is_completed"] is True
+
+    # Add any progress - should not be completed
+    client.post(
+        "/api/progress",
+        headers=test_auth_headers,
+        json={
+            "habit_id": habit_id,
+            "value": 1,
+            "date": datetime.date.today().isoformat(),
+        },
+    )
+
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+    assert habit["is_completed"] is False

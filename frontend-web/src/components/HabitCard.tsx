@@ -27,14 +27,6 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 		return totalValue;
 	};
 
-	const isHabitCompleted = () => {
-		// TODO: Frontend shouldn't need to know this logic. Move to backend instead.
-		if (habit.type == "above") {
-			return getProgress() >= habit.target;
-		}
-		return getProgress() <= habit.target;
-	};
-
 	const isBinaryHabit = () => {
 		return habit.target === 0 || habit.target === 1;
 	};
@@ -73,7 +65,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 					<div className="binary-progress">
 						<div></div>
 						<div className="binary-progress-content">
-							{isHabitCompleted() ? (
+							{habit.is_completed ? (
 								<FaCheckSquare className="habit-checkbox-icon completed" />
 							) : (
 								<FaRegSquare className="habit-checkbox-icon" />
@@ -85,7 +77,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 				) : (
 					<div className="quantitative-progress">
 						<div className="progress-check-column">
-							{isHabitCompleted() && <FaCheck className="habit-check-icon" />}
+							{habit.is_completed && <FaCheck className="habit-check-icon" />}
 						</div>
 						<div className="progress-bar-container">
 							<div

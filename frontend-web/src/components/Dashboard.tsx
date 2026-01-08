@@ -115,6 +115,7 @@ const Dashboard: React.FC = () => {
 		try {
 			await api.post("/progress", { habit_id: habitId, value: progress });
 			setHabitToAddProgressTo(null);
+			reloadHabits();
 			reloadProgress();
 			reloadStats();
 		} catch (error) {

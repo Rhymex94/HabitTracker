@@ -5,6 +5,7 @@ export interface Habit {
 	frequency: "daily" | "weekly" | "monthly" | "yearly"; // Adjust as per your backend enum
 	target: number;
 	unit?: string;
+	is_completed?: boolean;
 	created_at: string;
 	updated_at: string;
 }

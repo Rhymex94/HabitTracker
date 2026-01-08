@@ -1,7 +1,9 @@
+from datetime import date
 from flask import Blueprint, request, jsonify
-from app.models import db, Habit
+from app.models import db, Habit, ProgressEntry
 from app.enums import HabitFrequency, HabitType
 from app.auth import token_required
+from app.utils import get_date_range, calculate_habit_completion
 
 habits_bp = Blueprint("habits", __name__, url_prefix="/habits")
 
@@ -84,6 +86,21 @@ def update_habit(habit_id: int):
 @token_required
 def fetch_habits():
     habits = Habit.query.filter_by(user_id=request.user_id).all()
+    today = date.today()
+
+    # Build a dict mapping habit_id to progress entries for the current period
+    habit_progress = {}
+    for habit in habits:
+        start_date, end_date = get_date_range(today, habit.frequency)
+        progress_entries = (
+            ProgressEntry.query.filter(
+                ProgressEntry.habit_id == habit.id,
+                ProgressEntry.date >= start_date,
+                ProgressEntry.date < end_date,
+            )
+            .all()
+        )
+        habit_progress[habit.id] = progress_entries
 
     return (
         jsonify(
@@ -95,6 +112,9 @@ def fetch_habits():
                     "frequency": habit.frequency.name.lower(),
                     "target": habit.target_value,
                     "unit": habit.unit,
+                    "is_completed": calculate_habit_completion(
+                        habit, habit_progress[habit.id]
+                    ),
                 }
                 for habit in habits
             ]

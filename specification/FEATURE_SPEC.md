@@ -98,7 +98,7 @@ A habit tracking application designed to help users create, monitor, and maintai
 - [x] Default to current date if not specified
 - [x] Support for numeric values (including decimals)
 - [x] Validation: Prevent future-dated entries
-- [ ] Backend-driven completion status (currently frontend logic)
+- [x] Backend-driven completion status
 
 #### 3.2 Progress Entry Management
 - [x] Add progress via modal
@@ -302,7 +302,6 @@ A habit tracking application designed to help users create, monitor, and maintai
 
 ### Known Issues
 - API validation errors not shown to users
-- Habit completion logic duplicated in frontend (should be backend-only)
 
 ---
 
@@ -317,4 +316,5 @@ A habit tracking application designed to help users create, monitor, and maintai
 - **v0.7** (2026-01-04): Quantitative checkbox toggle for habit creation/editing
 - **v0.8** (2026-01-06): Future-dated progress entry validation with dynamic test
 - **v0.9** (2026-01-07): Visual progress indicators (checkboxes for binary, progress bars for quantitative)
+- **v1.0** (2026-01-08): Backend-driven completion status with comprehensive tests
 - **Current**: Core functionality complete, analytics features pending
