@@ -20,21 +20,9 @@ const SignupForm: React.FC = () => {
 		e.preventDefault();
 		setError(null);
 
+		// Only validate password confirmation on frontend (not sent to backend)
 		if (password !== confirmPassword) {
 			setError("Passwords do not match");
-			return;
-		}
-
-		// Validate password strength
-		if (password.length < 8) {
-			setError("Password must be at least 8 characters long");
-			return;
-		}
-
-		if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-			setError(
-				"Password must contain at least one uppercase letter, one lowercase letter, and one number"
-			);
 			return;
 		}
 
@@ -47,6 +35,7 @@ const SignupForm: React.FC = () => {
 			// Navigate to home page
 			navigate("/", { replace: true });
 		} catch (err: any) {
+			// Display validation errors from backend
 			setError(err.response?.data?.error || "Failed to create account");
 		}
 	};

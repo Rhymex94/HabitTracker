@@ -112,3 +112,49 @@ def test_create_progress_entry_future_date(client, test_habits, test_auth_header
     response = client.post("/api/progress", json=payload, headers=test_auth_headers)
     assert response.status_code == 400
     assert "future" in response.get_json()["error"].lower()
+
+
+def test_delete_progress_entry_without_authentication(client, progress_entries):
+    """Test that unauthenticated users cannot delete progress entries"""
+    entry_to_delete = progress_entries[0]
+
+    # Attempt to delete without auth headers
+    response = client.delete(f"/api/progress/{entry_to_delete.id}")
+    assert response.status_code == 401
+    assert "error" in response.get_json()
+
+    # Verify the entry still exists
+    entry = db.session.get(ProgressEntry, entry_to_delete.id)
+    assert entry is not None
+
+
+def test_delete_progress_entry_unauthorized_user(client, progress_entries, test_habits):
+    """Test that users cannot delete other users' progress entries"""
+    from app.models import User
+    from app.auth import create_access_token
+
+    # test_habits fixture creates "anotheruser" - we need it loaded
+    assert len(test_habits) > 0  # Ensure habits are loaded
+
+    # Get a progress entry that belongs to test_user
+    entry_to_delete = progress_entries[0]
+
+    # Find the "anotheruser" created in test_habits fixture
+    another_user = User.query.filter_by(username="anotheruser").first()
+    assert another_user is not None
+
+    # Create auth headers for the other user
+    other_user_token = create_access_token(another_user.id)
+    other_user_headers = {"Authorization": f"Bearer {other_user_token}"}
+
+    # Attempt to delete test_user's progress entry as another_user
+    response = client.delete(
+        f"/api/progress/{entry_to_delete.id}", headers=other_user_headers
+    )
+    assert response.status_code == 404
+    assert "not found" in response.get_json()["error"].lower()
+
+    # Verify the entry still exists
+    entry = db.session.get(ProgressEntry, entry_to_delete.id)
+    assert entry is not None
+    assert entry.id == entry_to_delete.id

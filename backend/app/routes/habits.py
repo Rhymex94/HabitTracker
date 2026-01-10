@@ -71,11 +71,17 @@ def update_habit(habit_id: int):
         return jsonify({"error": "Habit not found"}), 404
     data = request.get_json()
 
+    # Whitelist of allowed fields to prevent attribute injection
+    allowed_fields = {"name", "type", "frequency", "target_value", "unit"}
+
     for key, value in data.items():
+        # Map "target" to "target_value" for backwards compatibility
         if key == "target":
             key = "target_value"
 
-        setattr(habit, key, value)
+        # Only set whitelisted attributes
+        if key in allowed_fields:
+            setattr(habit, key, value)
 
     db.session.commit()
 

@@ -474,3 +474,66 @@ def test_habit_completion_target_zero(client, app, test_user, test_auth_headers)
     habits = response.get_json()
     habit = next((h for h in habits if h["id"] == habit_id), None)
     assert habit["is_completed"] is False
+
+
+def test_update_habit_prevents_attribute_injection(
+    client, app, test_user, test_auth_headers
+):
+    """Test that protected fields like user_id and id cannot be modified via PATCH"""
+    from app.models import User
+    from app import db
+    from app.auth import get_hashed_password
+
+    # Create a second user to attempt user_id hijacking
+    with app.app_context():
+        hashed_password = get_hashed_password("password123")
+        other_user = User(username="otheruser", password=hashed_password)
+        db.session.add(other_user)
+        db.session.commit()
+        other_user_id = other_user.id
+
+    # Create a habit for test_user
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Original Habit",
+            "type": "above",
+            "target": 5,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    assert response.status_code == 201
+    habit_data = response.get_json()
+    habit_id = habit_data["id"]
+    original_user_id = test_user.id
+
+    # Attempt to modify protected fields via PATCH
+    response = client.patch(
+        f"/api/habits/{habit_id}",
+        headers=test_auth_headers,
+        json={
+            "name": "Updated Habit",
+            "user_id": other_user_id,  # Try to change owner (should be ignored)
+            "id": 99999,  # Try to change ID (should be ignored)
+        },
+    )
+    assert response.status_code == 200
+
+    # Verify that only allowed fields were updated
+    with app.app_context():
+        from app.models import Habit
+
+        updated_habit = db.session.get(Habit, habit_id)
+        assert updated_habit is not None
+        assert updated_habit.name == "Updated Habit"  # Allowed field was updated
+        assert updated_habit.user_id == original_user_id  # Protected field unchanged
+        assert updated_habit.id == habit_id  # Protected field unchanged
+
+    # Verify habit still belongs to original user by fetching habits
+    response = client.get("/api/habits", headers=test_auth_headers)
+    habits = response.get_json()
+    habit = next((h for h in habits if h["id"] == habit_id), None)
+    assert habit is not None
+    assert habit["name"] == "Updated Habit"

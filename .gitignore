@@ -1,0 +1,6 @@
+.claude
+specification
+
+# Environment variables
+.env
+.env.local

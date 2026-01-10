@@ -130,9 +130,15 @@ def get_progress_entries():
 
 
 @progress_bp.route("/<int:entry_id>", methods=["DELETE"])
+@token_required
 def delete_progress_entry(entry_id):
     entry = db.session.get(ProgressEntry, entry_id)
     if not entry:
+        return jsonify({"error": "Progress entry not found"}), 404
+
+    # Verify the progress entry's habit belongs to the authenticated user
+    habit = Habit.query.filter_by(id=entry.habit_id, user_id=request.user_id).first()
+    if not habit:
         return jsonify({"error": "Progress entry not found"}), 404
 
     db.session.delete(entry)
