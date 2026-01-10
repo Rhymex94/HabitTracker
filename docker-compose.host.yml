@@ -10,6 +10,8 @@ services:
       - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
       - FRONTEND_ORIGIN=http://192.168.1.169:8321
       - FLASK_APP=app:create_app
+    env_file:
+      - .env
     depends_on:
       - db
     # TODO: Add a proper wait-for script.
