@@ -4,6 +4,7 @@ from app.models import db, Habit, ProgressEntry
 from app.enums import HabitFrequency, HabitType
 from app.auth import token_required
 from app.utils import get_date_range, calculate_habit_completion
+from app.validators import validate_habit_data
 
 habits_bp = Blueprint("habits", __name__, url_prefix="/habits")
 
@@ -18,7 +19,13 @@ def create_habit():
     target_value = data.get("target")
     unit = data.get("unit")
 
-    if not all([name, type_, (target_value is not None)]):
+    # Validate input data
+    is_valid, error_message = validate_habit_data(data, is_update=False)
+    if not is_valid:
+        return jsonify({"error": error_message}), 400
+
+    # Validate other required fields
+    if not type_ or target_value is None:
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
@@ -70,6 +77,11 @@ def update_habit(habit_id: int):
     if not habit:
         return jsonify({"error": "Habit not found"}), 404
     data = request.get_json()
+
+    # Validate input data
+    is_valid, error_message = validate_habit_data(data, is_update=True)
+    if not is_valid:
+        return jsonify({"error": error_message}), 400
 
     # Whitelist of allowed fields to prevent attribute injection
     allowed_fields = {"name", "type", "frequency", "target_value", "unit"}

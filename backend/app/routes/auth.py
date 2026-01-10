@@ -1,4 +1,3 @@
-import re
 from flask import Blueprint, request, jsonify
 from app.models import db, User
 from app.auth import (
@@ -8,6 +7,7 @@ from app.auth import (
     token_required,
 )
 from app.limiter import limiter
+from app.validators import validate_auth_credentials
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -19,31 +19,10 @@ def signup():
     username = data.get("username")
     password = data.get("password")
 
-    if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
-
-    # Validate username
-    if len(username) < 3:
-        return jsonify({"error": "Username must be at least 3 characters long"}), 400
-
-    if len(username) > 64:
-        return jsonify({"error": "Username must not exceed 64 characters"}), 400
-
-    if not re.match(r"^[a-zA-Z0-9_-]+$", username):
-        return jsonify({"error": "Username can only contain letters, numbers, hyphens, and underscores"}), 400
-
-    # Validate password strength
-    if len(password) < 8:
-        return jsonify({"error": "Password must be at least 8 characters long"}), 400
-
-    if not re.search(r"[a-z]", password):
-        return jsonify({"error": "Password must contain at least one lowercase letter"}), 400
-
-    if not re.search(r"[A-Z]", password):
-        return jsonify({"error": "Password must contain at least one uppercase letter"}), 400
-
-    if not re.search(r"\d", password):
-        return jsonify({"error": "Password must contain at least one number"}), 400
+    # Validate credentials
+    is_valid, error_message = validate_auth_credentials(username, password)
+    if not is_valid:
+        return jsonify({"error": error_message}), 400
 
     if User.query.filter_by(username=username).first():
         return jsonify({"error": "Username already exists"}), 400
@@ -69,6 +48,7 @@ def login():
     username = data.get("username")
     password = data.get("password")
 
+    # Check for required fields
     if not username or not password:
         return jsonify({"error": "Username and password are required"}), 400
 

@@ -423,3 +423,69 @@ def test_update_habit_prevents_attribute_injection(
     habit = next((h for h in habits if h["id"] == habit_id), None)
     assert habit is not None
     assert habit["name"] == "Updated Habit"
+
+
+@pytest.mark.parametrize(
+    "field,value,expected_error",
+    [
+        ("name", "a" * 121, "must not exceed 120 characters"),
+        ("name", "", "name is required"),
+        ("unit", "a" * 21, "must not exceed 20 characters"),
+        ("target", -1, "cannot be negative"),
+        ("target", 1000001, "too large"),
+        ("target", "not a number", "must be a number"),
+    ],
+    ids=["name_too_long", "name_empty", "unit_too_long", "target_negative", "target_too_large", "target_not_number"],
+)
+def test_create_habit_input_validation(client, test_user, test_auth_headers, field, value, expected_error):
+    """Test input validation for habit creation"""
+    data = {
+        "name": "Test Habit",
+        "type": "above",
+        "target": 1,
+        "frequency": "daily",
+        "user_id": test_user.id,
+    }
+    data[field] = value
+
+    response = client.post("/api/habits", headers=test_auth_headers, json=data)
+    assert response.status_code == 400
+    assert expected_error in response.get_json()["error"].lower()
+
+
+@pytest.mark.parametrize(
+    "field,value,expected_error",
+    [
+        ("name", "a" * 121, "must not exceed 120 characters"),
+        ("name", "", "name is required"),
+        ("unit", "a" * 21, "must not exceed 20 characters"),
+        ("target", -1, "cannot be negative"),
+        ("target", 1000001, "too large"),
+    ],
+    ids=["name_too_long", "name_empty", "unit_too_long", "target_negative", "target_too_large"],
+)
+def test_update_habit_input_validation(client, test_user, test_auth_headers, field, value, expected_error):
+    """Test input validation for habit updates"""
+    # Create a habit first
+    response = client.post(
+        "/api/habits",
+        headers=test_auth_headers,
+        json={
+            "name": "Test Habit",
+            "type": "above",
+            "target": 5,
+            "frequency": "daily",
+            "user_id": test_user.id,
+        },
+    )
+    habit_id = response.get_json()["id"]
+
+    # Try to update with invalid value
+    update_data = {field: value}
+    response = client.patch(
+        f"/api/habits/{habit_id}",
+        headers=test_auth_headers,
+        json=update_data,
+    )
+    assert response.status_code == 400
+    assert expected_error in response.get_json()["error"].lower()

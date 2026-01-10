@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from app.models import db, Habit, ProgressEntry
 from app.auth import token_required
 from app.utils import get_date_range, get_habit_dict
+from app.validators import validate_progress_data, validate_date_string
 
 progress_bp = Blueprint("progress", __name__, url_prefix="/progress")
 
@@ -24,21 +25,19 @@ def add_progress():
     if not habit:
         return jsonify({"error": "Habit not found or unauthorized"}), 404
 
-    try:
-        entry_date = (
-            datetime.strptime(date_str, "%Y-%m-%d").date()
-            if date_str
-            else datetime.now(timezone.utc).date()
-        )
-    except ValueError:
-        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+    # Validate date
+    is_valid, error_message, entry_date = validate_date_string(date_str)
+    if not is_valid:
+        return jsonify({"error": error_message}), 400
 
-    # Validate that the date is not in the future
-    if entry_date > datetime.now(timezone.utc).date():
-        return jsonify({"error": "Progress entry date cannot be in the future"}), 400
+    # Use current date if no date provided
+    if entry_date is None:
+        entry_date = datetime.now(timezone.utc).date()
 
-    if not isinstance(value, (int, float)):
-        return jsonify({"error": "target value is required."}), 400
+    # Validate progress value
+    is_valid, error_message = validate_progress_data(data)
+    if not is_valid:
+        return jsonify({"error": error_message}), 400
 
     try:
         entry = ProgressEntry(habit_id=habit_id, date=entry_date, value=value)

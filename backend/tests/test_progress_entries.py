@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import pytest
 from app import db
 from app.models import ProgressEntry
 
@@ -158,3 +159,22 @@ def test_delete_progress_entry_unauthorized_user(client, progress_entries, test_
     entry = db.session.get(ProgressEntry, entry_to_delete.id)
     assert entry is not None
     assert entry.id == entry_to_delete.id
+
+
+@pytest.mark.parametrize(
+    "value,expected_error",
+    [
+        (-1, "cannot be negative"),
+        (1000001, "too large"),
+        ("not a number", "must be a number"),
+    ],
+    ids=["negative", "too_large", "not_number"],
+)
+def test_create_progress_entry_input_validation(client, test_habits, test_auth_headers, value, expected_error):
+    """Test input validation for progress entry creation"""
+    habit = test_habits[0]
+    payload = {"habit_id": habit.id, "date": "2024-05-01", "value": value}
+
+    response = client.post("/api/progress", json=payload, headers=test_auth_headers)
+    assert response.status_code == 400
+    assert expected_error in response.get_json()["error"].lower()
