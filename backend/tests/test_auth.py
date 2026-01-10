@@ -1,41 +1,24 @@
-def test_signup_password_too_short(client):
-    """Test that passwords shorter than 8 characters are rejected"""
+import pytest
+
+
+@pytest.mark.parametrize(
+    "password,expected_error_fragment",
+    [
+        ("Short1", "at least 8 characters"),
+        ("PASSWORD123", "lowercase letter"),
+        ("password123", "uppercase letter"),
+        ("PasswordOnly", "number"),
+    ],
+    ids=["too_short", "no_lowercase", "no_uppercase", "no_number"],
+)
+def test_signup_invalid_password(client, password, expected_error_fragment):
+    """Test that invalid passwords are rejected with appropriate error messages"""
     response = client.post(
         "/api/auth/signup",
-        json={"username": "testuser", "password": "Short1"},
+        json={"username": "testuser", "password": password},
     )
     assert response.status_code == 400
-    assert "at least 8 characters" in response.get_json()["error"]
-
-
-def test_signup_password_no_lowercase(client):
-    """Test that passwords without lowercase letters are rejected"""
-    response = client.post(
-        "/api/auth/signup",
-        json={"username": "testuser", "password": "PASSWORD123"},
-    )
-    assert response.status_code == 400
-    assert "lowercase letter" in response.get_json()["error"]
-
-
-def test_signup_password_no_uppercase(client):
-    """Test that passwords without uppercase letters are rejected"""
-    response = client.post(
-        "/api/auth/signup",
-        json={"username": "testuser", "password": "password123"},
-    )
-    assert response.status_code == 400
-    assert "uppercase letter" in response.get_json()["error"]
-
-
-def test_signup_password_no_number(client):
-    """Test that passwords without numbers are rejected"""
-    response = client.post(
-        "/api/auth/signup",
-        json={"username": "testuser", "password": "PasswordOnly"},
-    )
-    assert response.status_code == 400
-    assert "number" in response.get_json()["error"]
+    assert expected_error_fragment in response.get_json()["error"]
 
 
 def test_signup_valid_password(client):
@@ -51,38 +34,26 @@ def test_signup_valid_password(client):
     assert data["username"] == "testuser"
 
 
-def test_signup_username_too_short(client):
-    """Test that usernames shorter than 3 characters are rejected"""
+@pytest.mark.parametrize(
+    "username,expected_error_fragment",
+    [
+        ("ab", "at least 3 characters"),
+        ("a" * 65, "must not exceed 64 characters"),
+        ("test@user!", "letters, numbers, hyphens, and underscores"),
+    ],
+    ids=["too_short", "too_long", "invalid_characters"],
+)
+def test_signup_invalid_username(client, username, expected_error_fragment):
+    """Test that invalid usernames are rejected with appropriate error messages"""
     response = client.post(
         "/api/auth/signup",
-        json={"username": "ab", "password": "ValidPass123"},
+        json={"username": username, "password": "ValidPass123"},
     )
     assert response.status_code == 400
-    assert "at least 3 characters" in response.get_json()["error"]
+    assert expected_error_fragment in response.get_json()["error"]
 
 
-def test_signup_username_too_long(client):
-    """Test that usernames longer than 64 characters are rejected"""
-    long_username = "a" * 65
-    response = client.post(
-        "/api/auth/signup",
-        json={"username": long_username, "password": "ValidPass123"},
-    )
-    assert response.status_code == 400
-    assert "must not exceed 64 characters" in response.get_json()["error"]
-
-
-def test_signup_username_invalid_characters(client):
-    """Test that usernames with invalid characters are rejected"""
-    response = client.post(
-        "/api/auth/signup",
-        json={"username": "test@user!", "password": "ValidPass123"},
-    )
-    assert response.status_code == 400
-    assert "letters, numbers, hyphens, and underscores" in response.get_json()["error"]
-
-
-def test_signup_username_valid_characters(client):
+def test_signup_valid_username(client):
     """Test that usernames with valid characters (letters, numbers, hyphens, underscores) are accepted"""
     response = client.post(
         "/api/auth/signup",
@@ -109,21 +80,16 @@ def test_signup_duplicate_username(client):
     assert "already exists" in response.get_json()["error"]
 
 
-def test_signup_missing_username(client):
-    """Test that missing username is rejected"""
-    response = client.post(
-        "/api/auth/signup",
-        json={"password": "ValidPass123"},
-    )
+@pytest.mark.parametrize(
+    "payload,expected_error_fragment",
+    [
+        ({"password": "ValidPass123"}, "required"),
+        ({"username": "testuser"}, "required"),
+    ],
+    ids=["missing_username", "missing_password"],
+)
+def test_signup_missing_fields(client, payload, expected_error_fragment):
+    """Test that missing required fields are rejected"""
+    response = client.post("/api/auth/signup", json=payload)
     assert response.status_code == 400
-    assert "required" in response.get_json()["error"]
-
-
-def test_signup_missing_password(client):
-    """Test that missing password is rejected"""
-    response = client.post(
-        "/api/auth/signup",
-        json={"username": "testuser"},
-    )
-    assert response.status_code == 400
-    assert "required" in response.get_json()["error"]
+    assert expected_error_fragment in response.get_json()["error"]
