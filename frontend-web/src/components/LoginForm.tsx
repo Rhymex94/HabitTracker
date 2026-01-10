@@ -36,7 +36,12 @@ const LoginForm: React.FC = () => {
 			// Get the redirect path from location state, or default to "/"
 			const from = (location.state as LocationState)?.from?.pathname || "/";
 			navigate(from, { replace: true });
-		} catch (err) {
+		} catch (err: any) {
+			// Handle rate limiting
+			if (err.response?.status === 429) {
+				setError("Too many login attempts. Please try again in a minute.");
+				return;
+			}
 			setError("Invalid username or password");
 		}
 	};

@@ -1,4 +1,5 @@
 import pytest
+import time
 
 
 @pytest.mark.parametrize(
@@ -93,3 +94,24 @@ def test_signup_missing_fields(client, payload, expected_error_fragment):
     response = client.post("/api/auth/signup", json=payload)
     assert response.status_code == 400
     assert expected_error_fragment in response.get_json()["error"]
+
+
+def test_login_rate_limit(client):
+    """Test that login endpoint is rate limited to 5 requests per minute"""
+    # Make 5 login attempts (at the limit)
+    for _ in range(5):
+        response = client.post(
+            "/api/auth/login",
+            json={"username": "testuser", "password": "password123"},
+        )
+        # All should return 401 (invalid credentials) or 200 (success if user exists)
+        assert response.status_code in [200, 401]
+
+    # The 6th attempt should be rate limited
+    response = client.post(
+        "/api/auth/login",
+        json={"username": "testuser", "password": "password123"},
+    )
+    assert response.status_code == 429  # Too Many Requests
+    # Flask-Limiter returns plain text error message by default
+    assert response.data is not None

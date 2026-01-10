@@ -8,6 +8,7 @@ import sys
 from flask_cors import CORS
 
 from . import models
+from app.limiter import limiter
 from app.routes.habits import habits_bp
 from app.routes.progress import progress_bp
 from app.routes.stats import stats_bp
@@ -34,6 +35,7 @@ def create_app(configs = None):
 
     db.init_app(app)
     migrate.init_app(app, db)
+    limiter.init_app(app)
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(habits_bp, url_prefix="/api/habits")

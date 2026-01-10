@@ -35,6 +35,11 @@ const SignupForm: React.FC = () => {
 			// Navigate to home page
 			navigate("/", { replace: true });
 		} catch (err: any) {
+			// Handle rate limiting
+			if (err.response?.status === 429) {
+				setError("Too many signup attempts. Please try again later.");
+				return;
+			}
 			// Display validation errors from backend
 			setError(err.response?.data?.error || "Failed to create account");
 		}

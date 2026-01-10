@@ -7,11 +7,13 @@ from app.auth import (
     create_access_token,
     token_required,
 )
+from app.limiter import limiter
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 @auth_bp.route("/signup", methods=["POST"])
+@limiter.limit("3 per hour")
 def signup():
     data = request.get_json()
     username = data.get("username")
@@ -61,6 +63,7 @@ def signup():
 
 
 @auth_bp.route("/login", methods=["POST"])
+@limiter.limit("5 per minute")
 def login():
     data = request.get_json()
     username = data.get("username")
