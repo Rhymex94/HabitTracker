@@ -1,6 +1,7 @@
+from collections import defaultdict
 from flask import Blueprint, jsonify, request
 from app.auth import token_required
-from app.models import db, Habit, ProgressEntry
+from app.models import ProgressEntry
 from app.utils import calculate_streak, get_habit_dict
 
 stats_bp = Blueprint("stats", __name__, url_prefix="/stats")
@@ -16,27 +17,21 @@ def get_stats():
     habit_dict = get_habit_dict(request.user_id)
 
     progress_entries = (
-        db.session.query(ProgressEntry.habit_id, ProgressEntry.date, ProgressEntry.value)
-        .filter(ProgressEntry.habit_id.in_([habit_id for habit_id in habit_dict.keys()]))
-        .order_by(ProgressEntry.habit_id, ProgressEntry.date.desc())
+        ProgressEntry.query.filter(
+            ProgressEntry.habit_id.in_(habit_dict.keys())
+        )
+        .order_by(ProgressEntry.date.desc())
         .all()
     )
 
-    current_habit = None
-    habit_index = None
-    for i in range(0, len(progress_entries)):
-        entry = progress_entries[i]
-        if current_habit is None:
-            current_habit = entry.habit_id
-            habit_index = i
+    # Group progress entries by habit_id
+    grouped_entries = defaultdict(list)
+    for entry in progress_entries:
+        grouped_entries[entry.habit_id].append(entry)
 
-        if current_habit != entry.habit_id:
-            habit_dict[current_habit]["progress_entries"] = progress_entries[habit_index:i]
-            habit_index = i
-            current_habit = entry.habit_id
-
-    if current_habit:
-        habit_dict[current_habit]["progress_entries"] = progress_entries[habit_index:]
+    # Assign grouped entries to habit_dict
+    for habit_id in habit_dict.keys():
+        habit_dict[habit_id]["progress_entries"] = grouped_entries[habit_id]
 
     for habit_obj in habit_dict.values():
         habit = habit_obj["habit"]

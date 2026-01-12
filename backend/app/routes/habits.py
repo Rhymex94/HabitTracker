@@ -106,19 +106,28 @@ def fetch_habits():
     habits = Habit.query.filter_by(user_id=request.user_id).all()
     today = date.today()
 
-    # Build a dict mapping habit_id to progress entries for the current period
-    habit_progress = {}
+    # Return early if no habits
+    if not habits:
+        return jsonify([]), 200
+
+    # Calculate date ranges for each habit
+    habit_date_ranges = {}
     for habit in habits:
         start_date, end_date = get_date_range(today, habit.frequency)
-        progress_entries = (
-            ProgressEntry.query.filter(
-                ProgressEntry.habit_id == habit.id,
-                ProgressEntry.date >= start_date,
-                ProgressEntry.date < end_date,
-            )
-            .all()
-        )
-        habit_progress[habit.id] = progress_entries
+        habit_date_ranges[habit.id] = (start_date, end_date)
+
+    # Fetch ALL progress entries for ALL habits in a single query
+    habit_ids = [habit.id for habit in habits]
+    all_progress_entries = (
+        ProgressEntry.query.filter(ProgressEntry.habit_id.in_(habit_ids)).all()
+    )
+
+    # Group progress entries by habit_id and filter by date range
+    habit_progress = {habit_id: [] for habit_id in habit_ids}
+    for entry in all_progress_entries:
+        start_date, end_date = habit_date_ranges[entry.habit_id]
+        if start_date <= entry.date < end_date:
+            habit_progress[entry.habit_id].append(entry)
 
     return (
         jsonify(

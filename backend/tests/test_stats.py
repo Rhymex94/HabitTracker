@@ -202,14 +202,14 @@ def test_binary_habit_done_then_undone():
                         "target_value": 1,
                     },
                 ],
-                "path": "app.routes.stats.Habit.query",
+                "path": "app.utils.Habit.query",
             },
             {
                 "entries": [
                     ProgressEntry(habit_id=1, date=date(2025, 8, 9), value=8),
                     ProgressEntry(habit_id=2, date=date(2025, 8, 8), value=1),
                 ],
-                "path": "app.routes.stats.db.session.query",
+                "path": "app.routes.stats.ProgressEntry.query",
             },
         )
     ],
