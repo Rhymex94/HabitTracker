@@ -14,6 +14,12 @@ class TestConfig:
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    RATELIMIT_ENABLED = False
+
+
+class TestConfigWithRateLimit(TestConfig):
+    RATELIMIT_ENABLED = True
+    RATELIMIT_STORAGE_URI = "memory://"
 
 
 @pytest.fixture
@@ -32,6 +38,26 @@ def app():
 @pytest.fixture
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture
+def rate_limited_app():
+    """App fixture with rate limiting enabled for rate limit tests."""
+    app = create_app(TestConfigWithRateLimit())
+
+    with app.app_context():
+        db.create_all()
+
+    yield app
+
+    with app.app_context():
+        db.drop_all()
+
+
+@pytest.fixture
+def rate_limited_client(rate_limited_app):
+    """Client fixture with rate limiting enabled."""
+    return rate_limited_app.test_client()
 
 
 @pytest.fixture

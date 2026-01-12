@@ -10,10 +10,12 @@ services:
       - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
       - FRONTEND_ORIGIN=http://192.168.1.169:8321
       - FLASK_APP=app:create_app
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - stack.env
     depends_on:
       - db
+      - redis
     # TODO: Add a proper wait-for script.
     command: >
       sh -c "
@@ -33,6 +35,12 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+
   frontend:
     build:
       context: ./frontend-web
@@ -42,5 +50,6 @@ services:
       - "8321:80"
     depends_on:
       - backend
+
 volumes:
   db_data:

@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.models import db, Habit, ProgressEntry
 from app.auth import token_required
+from app.redis_client import invalidate_streak_cache
 from app.utils import get_date_range, get_habit_dict
 from app.validators import validate_progress_data, validate_date_string
 
@@ -43,6 +44,7 @@ def add_progress():
         entry = ProgressEntry(habit_id=habit_id, date=entry_date, value=value)
         db.session.add(entry)
         db.session.commit()
+        invalidate_streak_cache(habit_id)
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Duplicate entry for this habit and date"}), 400
@@ -140,6 +142,8 @@ def delete_progress_entry(entry_id):
     if not habit:
         return jsonify({"error": "Progress entry not found"}), 404
 
+    habit_id = entry.habit_id
     db.session.delete(entry)
     db.session.commit()
+    invalidate_streak_cache(habit_id)
     return jsonify({"message": f"Progress entry {entry_id} deleted"}), 200

@@ -2,6 +2,7 @@ from collections import defaultdict
 from flask import Blueprint, jsonify, request
 from app.auth import token_required
 from app.models import ProgressEntry
+from app.redis_client import get_cached_streak, set_cached_streak
 from app.utils import calculate_streak, get_habit_dict
 
 stats_bp = Blueprint("stats", __name__, url_prefix="/stats")
@@ -35,7 +36,17 @@ def get_stats():
 
     for habit_obj in habit_dict.values():
         habit = habit_obj["habit"]
+
+        # Check cache first
+        cached_streak = get_cached_streak(habit.id)
+        if cached_streak is not None:
+            streaks[habit.id] = cached_streak
+            continue
+
+        # Cache miss - calculate and cache
         entries = habit_obj["progress_entries"]
-        streaks[habit.id] = calculate_streak(habit, entries)
+        streak = calculate_streak(habit, entries)
+        set_cached_streak(habit.id, streak)
+        streaks[habit.id] = streak
 
     return jsonify(streaks)
