@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_migrate import Migrate
+from flask_talisman import Talisman
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 import logging
@@ -36,6 +37,10 @@ def create_app(configs = None):
     db.init_app(app)
     migrate.init_app(app, db)
     limiter.init_app(app)
+
+    # Enforce HTTPS in production
+    if os.environ.get("ENVIRONMENT") == "production":
+        Talisman(app, force_https=True, content_security_policy=None)
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(habits_bp, url_prefix="/api/habits")

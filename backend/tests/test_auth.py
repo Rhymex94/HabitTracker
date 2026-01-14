@@ -115,3 +115,33 @@ def test_login_rate_limit(rate_limited_client):
     assert response.status_code == 429  # Too Many Requests
     # Flask-Limiter returns plain text error message by default
     assert response.data is not None
+
+
+def test_https_enforcement_redirects_http_in_production(production_client):
+    """Test that HTTP requests are redirected to HTTPS in production."""
+    response = production_client.get(
+        "/api/habits",
+        headers={"X-Forwarded-Proto": "http"},
+    )
+    assert response.status_code == 302
+    assert response.location.startswith("https://")
+
+
+def test_https_enforcement_allows_https_in_production(production_client):
+    """Test that HTTPS requests are allowed through in production."""
+    response = production_client.get(
+        "/api/habits",
+        headers={"X-Forwarded-Proto": "https"},
+    )
+    # Should not redirect - will be 401 (no auth) but not 301
+    assert response.status_code != 301
+
+
+def test_no_https_enforcement_in_development(client):
+    """Test that HTTP requests are not redirected in development."""
+    response = client.get(
+        "/api/habits",
+        headers={"X-Forwarded-Proto": "http"},
+    )
+    # Should not redirect - will be 401 (no auth) but not 301
+    assert response.status_code != 301

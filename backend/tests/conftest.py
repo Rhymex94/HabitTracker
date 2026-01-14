@@ -1,3 +1,4 @@
+import os
 import pytest
 from unittest.mock import patch, MagicMock
 from datetime import date, datetime, timedelta
@@ -22,6 +23,11 @@ class TestConfigWithRateLimit(TestConfig):
     RATELIMIT_STORAGE_URI = "memory://"
 
 
+class TestConfigProduction(TestConfig):
+    """Test config that simulates production environment for HTTPS tests."""
+    pass  # ENVIRONMENT is set via monkeypatch in fixture
+
+
 @pytest.fixture
 def app():
     app = create_app(TestConfig())
@@ -43,6 +49,17 @@ def client(app):
 @pytest.fixture
 def rate_limited_app():
     """App fixture with rate limiting enabled for rate limit tests."""
+    # Clear any existing rate limit keys from Redis before test
+    try:
+        import redis
+        redis_url = os.environ.get("REDIS_URL")
+        if redis_url:
+            r = redis.from_url(redis_url)
+            for key in r.scan_iter("LIMITER*"):
+                r.delete(key)
+    except Exception:
+        pass  # Redis not available, using in-memory storage
+
     app = create_app(TestConfigWithRateLimit())
 
     with app.app_context():
@@ -58,6 +75,35 @@ def rate_limited_app():
 def rate_limited_client(rate_limited_app):
     """Client fixture with rate limiting enabled."""
     return rate_limited_app.test_client()
+
+
+@pytest.fixture
+def production_app():
+    """App fixture with production environment for HTTPS enforcement tests."""
+    original_env = os.environ.get("ENVIRONMENT")
+    os.environ["ENVIRONMENT"] = "production"
+
+    app = create_app(TestConfigProduction())
+
+    with app.app_context():
+        db.create_all()
+
+    yield app
+
+    with app.app_context():
+        db.drop_all()
+
+    # Restore original environment
+    if original_env is None:
+        os.environ.pop("ENVIRONMENT", None)
+    else:
+        os.environ["ENVIRONMENT"] = original_env
+
+
+@pytest.fixture
+def production_client(production_app):
+    """Client fixture with production environment for HTTPS tests."""
+    return production_app.test_client()
 
 
 @pytest.fixture
