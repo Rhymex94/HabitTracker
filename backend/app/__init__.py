@@ -22,6 +22,10 @@ migrate = Migrate()
 def create_app(configs = None):
     app = Flask(__name__)
 
+    # Enforce HTTPS in production (must be before other middleware)
+    if os.environ.get("ENVIRONMENT") == "production":
+        Talisman(app, force_https=True, content_security_policy=None)
+
     frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
     CORS(
         app,
@@ -37,10 +41,6 @@ def create_app(configs = None):
     db.init_app(app)
     migrate.init_app(app, db)
     limiter.init_app(app)
-
-    # Enforce HTTPS in production
-    if os.environ.get("ENVIRONMENT") == "production":
-        Talisman(app, force_https=True, content_security_policy=None)
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(habits_bp, url_prefix="/api/habits")
