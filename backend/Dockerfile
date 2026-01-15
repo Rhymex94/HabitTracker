@@ -10,4 +10,3 @@ COPY . .
 RUN chmod +x ./entrypoint.sh
 ENV PYTHONPATH=/app
 ENTRYPOINT [ "./entrypoint.sh" ]
-#CMD ["python", "run.py"]

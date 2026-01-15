@@ -15,11 +15,6 @@ services:
     depends_on:
       - db
       - redis
-    # TODO: Add a proper wait-for script.
-    command: >
-      sh -c "
-        sleep 2;
-        flask db upgrade && flask run --host=0.0.0.0"
 
   db:
     image: mysql:8.0
