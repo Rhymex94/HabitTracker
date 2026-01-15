@@ -4,16 +4,14 @@ services:
   backend:
     build: ./backend
     ports:
-      - "8320:5000"
+      - "${BACKEND_PORT:-8320}:5000"
     volumes:
       - ./backend:/app
     env_file:
       - .env
     environment:
       - PYTHONUNBUFFERED=1
-      - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
       - FLASK_APP=app:create_app
-      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
       - redis
@@ -26,20 +24,15 @@ services:
   db:
     image: mysql:8.0
     restart: always
-    environment:
-      MYSQL_DATABASE: habits_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - db_data:/var/lib/mysql
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     restart: always
 
 volumes:
