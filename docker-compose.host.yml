@@ -8,7 +8,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=mysql+pymysql://user:password@db/habits_db
-      - FRONTEND_ORIGIN=http://192.168.1.169:8321
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN}
       - FLASK_APP=app:create_app
       - REDIS_URL=redis://redis:6379/0
     env_file:
@@ -45,7 +45,7 @@ services:
     build:
       context: ./frontend-web
       args:
-        - VITE_API_URL=http://192.168.1.169:8320
+        - VITE_API_URL=${VITE_API_URL}
     ports:
       - "8321:80"
     depends_on:
