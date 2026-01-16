@@ -87,12 +87,17 @@ const Dashboard: React.FC = () => {
 
 	const handleEditHabit = async (
 		habitId: number,
-		habit: Omit<Habit, "id" | "created_at" | "updated_at">
+		updatedFields: Omit<Habit, "id" | "created_at" | "updated_at">
 	) => {
 		try {
-			await api.patch(`/habits/${habitId}`, habit);
+			await api.patch(`/habits/${habitId}`, updatedFields);
+			// Optimistic update: merge updated fields into existing habit
+			setHabits((prevHabits) =>
+				prevHabits.map((h) =>
+					h.id === habitId ? { ...h, ...updatedFields } : h
+				)
+			);
 			setHabitToEdit(null);
-			reloadHabits();
 		} catch (err) {
 			setError("Failed to edit habit");
 			console.error("Error editing habit:", err);
@@ -102,21 +107,36 @@ const Dashboard: React.FC = () => {
 	const handleDeleteHabit = async (habitId: number) => {
 		try {
 			await api.delete(`/habits/${habitId}`);
+			// Optimistic update: remove habit from local state
+			setHabits((prevHabits) => prevHabits.filter((h) => h.id !== habitId));
+			// Remove related progress entries
+			setProgress((prevProgress) =>
+				prevProgress.filter((p) => p.habit_id !== habitId)
+			);
+			// Remove the habit's streak from stats
+			setStats((prevStats) => {
+				const newStats = new Map(prevStats);
+				newStats.delete(String(habitId));
+				return newStats;
+			});
 			setHabitToDelete(null);
-			reloadHabits();
-			reloadProgress();
-			reloadStats();
 		} catch (error) {
 			console.error("Error deleting habit:", error);
 		}
 	};
 
-	const handleAddProgress = async (habitId: number, progress: number) => {
+	const handleAddProgress = async (habitId: number, value: number) => {
 		try {
-			await api.post("/progress", { habit_id: habitId, value: progress });
+			const response = await api.post("/progress", {
+				habit_id: habitId,
+				value: value,
+			});
+			// Add new progress entry to local state from response
+			setProgress((prevProgress) => [...prevProgress, response.data]);
 			setHabitToAddProgressTo(null);
+			// Still need to reload habits (for is_completed) and stats (for streaks)
+			// as these are calculated server-side
 			reloadHabits();
-			reloadProgress();
 			reloadStats();
 		} catch (error) {
 			console.error("Error adding progress to habit:", error);
