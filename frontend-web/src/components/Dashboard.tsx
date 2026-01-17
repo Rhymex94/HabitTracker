@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import type { Habit, Progress } from "../types";
+import { isHabitBinary, type Habit, type Progress } from "../types";
 import api from "../api/axios";
 import HabitList from "./HabitList";
 import AddHabitModal from "./AddHabitModal";
@@ -41,7 +41,7 @@ const Dashboard: React.FC = () => {
 		return api
 			.get("/habits")
 			.then((response) => {
-				setHabits(response.data);
+				setHabits(response.data.data);
 			})
 			.catch((err) => {
 				console.error("Failed to load habits", err);
@@ -53,7 +53,7 @@ const Dashboard: React.FC = () => {
 		return api
 			.get("/progress")
 			.then((response) => {
-				setProgress(response.data);
+				setProgress(response.data.data);
 			})
 			.catch((err) => {
 				setError("Failed to load progress");
@@ -65,7 +65,7 @@ const Dashboard: React.FC = () => {
 		return api
 			.get("/stats")
 			.then((response) => {
-				setStats(new Map(Object.entries(response.data)));
+				setStats(new Map(Object.entries(response.data.data)));
 			})
 			.catch((err) => {
 				setError("Failed to load stats");
@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
 	) => {
 		try {
 			const response = await api.post("/habits", newHabit);
-			setHabits([...habits, response.data]);
+			setHabits([...habits, response.data.data]);
 		} catch (err) {
 			setError("Failed to add habit");
 			console.error("Error adding habit:", err);
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
 				value: value,
 			});
 			// Add new progress entry to local state from response
-			setProgress((prevProgress) => [...prevProgress, response.data]);
+			setProgress((prevProgress) => [...prevProgress, response.data.data]);
 			setHabitToAddProgressTo(null);
 			// Still need to reload habits (for is_completed) and stats (for streaks)
 			// as these are calculated server-side
@@ -141,13 +141,6 @@ const Dashboard: React.FC = () => {
 		} catch (error) {
 			console.error("Error adding progress to habit:", error);
 		}
-	};
-
-	const isHabitBinary = (habit: Habit) => {
-		if (habit.target == 1) {
-			return true;
-		}
-		return false;
 	};
 
 	return (

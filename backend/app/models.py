@@ -40,10 +40,16 @@ class Habit(db.Model):
 
 class ProgressEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False)
+    date = db.Column(db.Date, nullable=False, index=True)
     value = db.Column(db.Float, nullable=False)
     habit_id = db.Column(
         db.Integer,
         db.ForeignKey("habit.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
+    )
+
+    # Composite index for the common query pattern: filter by habit_id and date range
+    __table_args__ = (
+        db.Index("ix_progress_entry_habit_date", "habit_id", "date"),
     )

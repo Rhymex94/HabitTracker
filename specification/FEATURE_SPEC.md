@@ -227,6 +227,79 @@ A habit tracking application designed to help users create, monitor, and maintai
 
 ---
 
+## API Response Format
+
+All API endpoints use a standardized response format with a `success` flag to indicate the result of the operation.
+
+### Success Responses
+
+**With data (GET, POST):**
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**With message only (DELETE, PATCH):**
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully"
+}
+```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "message": "Description of what went wrong"
+}
+```
+
+### Examples
+
+**Login success:**
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbG...",
+    "user_id": 1,
+    "username": "testuser"
+  }
+}
+```
+
+**Get habits:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "Exercise",
+      "type": "above",
+      "frequency": "daily",
+      "target": 30,
+      "unit": "minutes",
+      "is_completed": false
+    }
+  ]
+}
+```
+
+**Validation error:**
+```json
+{
+  "success": false,
+  "message": "Password must be at least 8 characters"
+}
+```
+
+---
+
 ## Future Enhancements (Post-MVP)
 
 ### Advanced Features

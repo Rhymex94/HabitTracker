@@ -1,6 +1,7 @@
 class MockHabit:
 
-    def __init__(self, frequency, type_, target_value, start_date):
+    def __init__(self, frequency, type_, target_value, start_date, id=None):
+        self.id = id
         self.frequency = frequency
         self.type = type_
         self.target_value = target_value
@@ -8,6 +9,7 @@ class MockHabit:
 
 
 class MockProgressEntry:
-    def __init__(self, date, value):
+    def __init__(self, date, value, habit_id=None):
         self.date = date
         self.value = value
+        self.habit_id = habit_id

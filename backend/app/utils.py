@@ -1,17 +1,50 @@
-
-
 from datetime import date, timedelta
+from typing import Sequence
 
 from app.enums import HabitFrequency, HabitType
 from app.models import Habit, ProgressEntry
 
 
-def get_habit_dict(user_id: int):
-    habits = Habit.query.filter_by(user_id=user_id).all()
-    habit_dict = {}
+def filter_progress_to_current_period(
+    habits: Sequence[Habit],
+    progress_entries: Sequence[ProgressEntry],
+    reference_date: date | None = None,
+) -> dict[int, list[ProgressEntry]]:
+    """
+    Filter progress entries to the current period for each habit.
+
+    Args:
+        habits: List of Habit objects (need id and frequency)
+        progress_entries: List of ProgressEntry objects to filter
+        reference_date: The reference date for calculating periods (defaults to today)
+
+    Returns:
+        Dictionary mapping habit_id to list of ProgressEntry objects
+        that fall within the habit's current period.
+        Uses exclusive end date (start <= entry.date < end).
+    """
+    if reference_date is None:
+        reference_date = date.today()
+
+    # Calculate date ranges for each habit
+    habit_date_ranges = {}
     for habit in habits:
-        habit_dict[habit.id] = {"habit": habit, "progress_entries": []}
-    return habit_dict
+        start_date, end_date = get_date_range(reference_date, habit.frequency)
+        habit_date_ranges[habit.id] = (start_date, end_date)
+
+    # Initialize result with empty lists for each habit
+    result: dict[int, list[ProgressEntry]] = {habit.id: [] for habit in habits}
+
+    # Filter entries by date range
+    for entry in progress_entries:
+        if entry.habit_id in habit_date_ranges:
+            start_date, end_date = habit_date_ranges[entry.habit_id]
+            # Exclusive end date: start <= date < end
+            if start_date <= entry.date < end_date:
+                result[entry.habit_id].append(entry)
+
+    return result
+
 
 def get_date_range(current_date: date, frequency: HabitFrequency) -> tuple[date, date]:
 

@@ -1,11 +1,11 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 
 from app.models import db, Habit, ProgressEntry
 from app.auth import token_required
 from app.redis_client import invalidate_streak_cache
-from app.utils import get_date_range, get_habit_dict
+from app.utils import filter_progress_to_current_period
 from app.validators import validate_progress_data, validate_date_string
 
 progress_bp = Blueprint("progress", __name__, url_prefix="/progress")
@@ -20,16 +20,16 @@ def add_progress():
     value = data.get("value")
 
     if not habit_id or value is None:
-        return jsonify({"error": "Missing required fields"}), 400
+        return jsonify({"success": False, "message": "Missing required fields"}), 400
 
     habit = Habit.query.filter_by(id=habit_id, user_id=request.user_id).first()
     if not habit:
-        return jsonify({"error": "Habit not found or unauthorized"}), 404
+        return jsonify({"success": False, "message": "Habit not found or unauthorized"}), 404
 
     # Validate date
     is_valid, error_message, entry_date = validate_date_string(date_str)
     if not is_valid:
-        return jsonify({"error": error_message}), 400
+        return jsonify({"success": False, "message": error_message}), 400
 
     # Use current date if no date provided
     if entry_date is None:
@@ -38,7 +38,7 @@ def add_progress():
     # Validate progress value
     is_valid, error_message = validate_progress_data(data)
     if not is_valid:
-        return jsonify({"error": error_message}), 400
+        return jsonify({"success": False, "message": error_message}), 400
 
     try:
         entry = ProgressEntry(habit_id=habit_id, date=entry_date, value=value)
@@ -47,17 +47,18 @@ def add_progress():
         invalidate_streak_cache(habit_id)
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"error": "Duplicate entry for this habit and date"}), 400
+        return jsonify({"success": False, "message": "Duplicate entry for this habit and date"}), 400
 
     return (
-        jsonify(
-            {
+        jsonify({
+            "success": True,
+            "data": {
                 "id": entry.id,
                 "habit_id": entry.habit_id,
                 "date": entry.date.isoformat(),
                 "value": entry.value,
-            }
-        ),
+            },
+        }),
         201,
     )
 
@@ -74,7 +75,7 @@ def get_progress_entries():
     if habit_id:
         habit = Habit.query.filter_by(id=habit_id, user_id=request.user_id).first()
         if not habit:
-            return jsonify({"error": "Habit not found or unauthorized"}), 404
+            return jsonify({"success": False, "message": "Habit not found or unauthorized"}), 404
 
     query = ProgressEntry.query
     if habit_id:
@@ -90,35 +91,27 @@ def get_progress_entries():
             start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
             query = query.filter(ProgressEntry.date >= start_date_obj)
         except ValueError:
-            return jsonify({"error": "Invalid start_date format. Use YYYY-MM-DD."}), 400
+            return jsonify({"success": False, "message": "Invalid start_date format. Use YYYY-MM-DD."}), 400
 
     if end_date:
         try:
             end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
             query = query.filter(ProgressEntry.date <= end_date_obj)
         except ValueError:
-            return jsonify({"error": "Invalid end_date format. Use YYYY-MM-DD."}), 400
+            return jsonify({"success": False, "message": "Invalid end_date format. Use YYYY-MM-DD."}), 400
 
     entries = query.all()
     if not include_all:
-        habit_dict = get_habit_dict(request.user_id)
-
-        today = date.today()
-
-        ranges = {
-            hid: get_date_range(today, h["habit"].frequency)
-            for hid, h in habit_dict.items()
-        }
-
+        habits = Habit.query.filter_by(user_id=request.user_id).all()
+        filtered_by_habit = filter_progress_to_current_period(habits, entries)
+        # Flatten the filtered results back into a list
         entries = [
-            entry
-            for entry in entries
-            if entry.habit_id in ranges
-            and ranges[entry.habit_id][0] <= entry.date <= ranges[entry.habit_id][1]
+            entry for entries_list in filtered_by_habit.values() for entry in entries_list
         ]
 
-    return jsonify(
-        [
+    return jsonify({
+        "success": True,
+        "data": [
             {
                 "id": entry.id,
                 "habit_id": entry.habit_id,
@@ -126,8 +119,8 @@ def get_progress_entries():
                 "value": entry.value,
             }
             for entry in entries
-        ]
-    )
+        ],
+    })
 
 
 @progress_bp.route("/<int:entry_id>", methods=["DELETE"])
@@ -135,15 +128,15 @@ def get_progress_entries():
 def delete_progress_entry(entry_id):
     entry = db.session.get(ProgressEntry, entry_id)
     if not entry:
-        return jsonify({"error": "Progress entry not found"}), 404
+        return jsonify({"success": False, "message": "Progress entry not found"}), 404
 
     # Verify the progress entry's habit belongs to the authenticated user
     habit = Habit.query.filter_by(id=entry.habit_id, user_id=request.user_id).first()
     if not habit:
-        return jsonify({"error": "Progress entry not found"}), 404
+        return jsonify({"success": False, "message": "Progress entry not found"}), 404
 
     habit_id = entry.habit_id
     db.session.delete(entry)
     db.session.commit()
     invalidate_streak_cache(habit_id)
-    return jsonify({"message": f"Progress entry {entry_id} deleted"}), 200
+    return jsonify({"success": True, "message": f"Progress entry {entry_id} deleted"}), 200

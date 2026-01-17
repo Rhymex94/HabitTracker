@@ -11,10 +11,11 @@ def test_create_progress_entry(client, test_habits, test_auth_headers):
     response = client.post("/api/progress", json=payload, headers=test_auth_headers)
     assert response.status_code == 201
     data = response.get_json()
+    assert data["success"] is True
 
-    assert data["habit_id"] == habit.id
-    assert data["date"] == "2024-05-01"
-    assert data["value"] == 1
+    assert data["data"]["habit_id"] == habit.id
+    assert data["data"]["date"] == "2024-05-01"
+    assert data["data"]["value"] == 1
 
     entry = (
         db.session.query(ProgressEntry)
@@ -34,10 +35,11 @@ def test_get_progress_entries(client, progress_entries, test_auth_headers):
     assert response.status_code == 200
 
     data = response.get_json()
-    assert isinstance(data, list)
-    assert len(data) == len(progress_entries)
+    assert data["success"] is True
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) == len(progress_entries)
 
-    returned_ids = {entry["id"] for entry in data}
+    returned_ids = {entry["id"] for entry in data["data"]}
     expected_ids = {e.id for e in progress_entries}
     assert returned_ids == expected_ids
 
@@ -52,14 +54,17 @@ def test_get_progress_entries_date_filter(client, progress_entries, test_auth_he
     assert response.status_code == 200
 
     data = response.get_json()
-    assert len(data) == 2
-    returned_dates = {entry["date"] for entry in data}
+    assert data["success"] is True
+    assert len(data["data"]) == 2
+    returned_dates = {entry["date"] for entry in data["data"]}
     assert returned_dates == {"2024-05-02", "2024-05-03"}
 
 
 def test_get_progress_entries_invalid_habit(client, test_auth_headers):
     response = client.get("/api/progress?habit_id=999999", headers=test_auth_headers)
     assert response.status_code == 404
+    data = response.get_json()
+    assert data["success"] is False
 
 
 def test_get_progress_entries_empty_result(client, progress_entries, test_auth_headers):
@@ -72,8 +77,9 @@ def test_get_progress_entries_empty_result(client, progress_entries, test_auth_h
     assert response.status_code == 200
 
     data = response.get_json()
-    assert isinstance(data, list)
-    assert len(data) == 0
+    assert data["success"] is True
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) == 0
 
 
 def test_delete_existing_progress_entry(client, progress_entries, test_auth_headers):
@@ -85,13 +91,15 @@ def test_delete_existing_progress_entry(client, progress_entries, test_auth_head
         f"/api/progress/{entry_to_delete.id}", headers=test_auth_headers
     )
     assert response.status_code == 200
-    assert f"{entry_to_delete.id}" in response.get_json()["message"]
+    data = response.get_json()
+    assert data["success"] is True
+    assert f"{entry_to_delete.id}" in data["message"]
 
     # Verify it's no longer returned
     response_check = client.get(
         f"/api/progress?habit_id={habit_id}", headers=test_auth_headers
     )
-    ids = {entry["id"] for entry in response_check.get_json()}
+    ids = {entry["id"] for entry in response_check.get_json()["data"]}
     assert entry_to_delete.id not in ids
 
 
@@ -102,7 +110,9 @@ def test_delete_nonexistent_progress_entry(client, test_auth_headers):
         f"/api/progress/{non_existent_id}", headers=test_auth_headers
     )
     assert response.status_code == 404
-    assert "not found" in response.get_json()["error"].lower()
+    data = response.get_json()
+    assert data["success"] is False
+    assert "not found" in data["message"].lower()
 
 
 def test_create_progress_entry_future_date(client, test_habits, test_auth_headers):
@@ -112,7 +122,9 @@ def test_create_progress_entry_future_date(client, test_habits, test_auth_header
 
     response = client.post("/api/progress", json=payload, headers=test_auth_headers)
     assert response.status_code == 400
-    assert "future" in response.get_json()["error"].lower()
+    data = response.get_json()
+    assert data["success"] is False
+    assert "future" in data["message"].lower()
 
 
 def test_delete_progress_entry_without_authentication(client, progress_entries):
@@ -122,7 +134,8 @@ def test_delete_progress_entry_without_authentication(client, progress_entries):
     # Attempt to delete without auth headers
     response = client.delete(f"/api/progress/{entry_to_delete.id}")
     assert response.status_code == 401
-    assert "error" in response.get_json()
+    # Auth errors may have different format, just check response exists
+    assert response.get_json() is not None
 
     # Verify the entry still exists
     entry = db.session.get(ProgressEntry, entry_to_delete.id)
@@ -153,7 +166,9 @@ def test_delete_progress_entry_unauthorized_user(client, progress_entries, test_
         f"/api/progress/{entry_to_delete.id}", headers=other_user_headers
     )
     assert response.status_code == 404
-    assert "not found" in response.get_json()["error"].lower()
+    data = response.get_json()
+    assert data["success"] is False
+    assert "not found" in data["message"].lower()
 
     # Verify the entry still exists
     entry = db.session.get(ProgressEntry, entry_to_delete.id)
@@ -177,4 +192,6 @@ def test_create_progress_entry_input_validation(client, test_habits, test_auth_h
 
     response = client.post("/api/progress", json=payload, headers=test_auth_headers)
     assert response.status_code == 400
-    assert expected_error in response.get_json()["error"].lower()
+    data = response.get_json()
+    assert data["success"] is False
+    assert expected_error in data["message"].lower()

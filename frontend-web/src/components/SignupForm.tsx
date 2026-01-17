@@ -30,7 +30,7 @@ const SignupForm: React.FC = () => {
 			const response = await api.post("/auth/signup", { username, password });
 
 			// Use the new login function from context (default to rememberMe = true for new signups)
-			login(response.data.token, response.data.user_id.toString(), true);
+			login(response.data.data.token, response.data.data.user_id.toString(), true);
 
 			// Navigate to home page
 			navigate("/", { replace: true });
@@ -41,7 +41,7 @@ const SignupForm: React.FC = () => {
 				return;
 			}
 			// Display validation errors from backend
-			setError(err.response?.data?.error || "Failed to create account");
+			setError(err.response?.data?.message || "Failed to create account");
 		}
 	};
 

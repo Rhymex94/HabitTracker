@@ -32,3 +32,13 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = get_secret_key()
     DEBUG = os.getenv("ENVIRONMENT") != "production"
+
+    # Connection pooling configuration for production performance
+    # These settings help manage database connections efficiently under load
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": int(os.getenv("DB_POOL_SIZE", "10")),  # Number of persistent connections
+        "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", "20")),  # Extra connections when pool is exhausted
+        "pool_timeout": int(os.getenv("DB_POOL_TIMEOUT", "30")),  # Seconds to wait for available connection
+        "pool_recycle": int(os.getenv("DB_POOL_RECYCLE", "1800")),  # Recycle connections after 30 min (avoid MySQL timeout)
+        "pool_pre_ping": True,  # Verify connection is alive before using (prevents stale connection errors)
+    }

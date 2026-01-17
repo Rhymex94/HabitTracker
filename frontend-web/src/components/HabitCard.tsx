@@ -1,6 +1,6 @@
 import React from 'react';
 import './HabitCard.css';
-import type { Habit, Progress } from "../types";
+import { isHabitBinary, type Habit, type Progress } from "../types";
 import { useHabitContext } from "../context/HabitContext";
 import { FaCheck, FaFire, FaRegSquare, FaCheckSquare } from "react-icons/fa";
 
@@ -25,10 +25,6 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 			totalValue += prog.value;
 		}
 		return totalValue;
-	};
-
-	const isBinaryHabit = () => {
-		return habit.target === 0 || habit.target === 1;
 	};
 
 	const getProgressPercentage = () => {
@@ -61,7 +57,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, progress, stats }) => {
 				</p>
 			</div>
 			<div className="progress-container">
-				{isBinaryHabit() ? (
+				{isHabitBinary(habit) ? (
 					<div className="binary-progress">
 						<div></div>
 						<div className="binary-progress-content">

@@ -19,7 +19,9 @@ def test_signup_invalid_password(client, password, expected_error_fragment):
         json={"username": "testuser", "password": password},
     )
     assert response.status_code == 400
-    assert expected_error_fragment in response.get_json()["error"]
+    data = response.get_json()
+    assert data["success"] is False
+    assert expected_error_fragment in data["message"]
 
 
 def test_signup_valid_password(client):
@@ -30,9 +32,10 @@ def test_signup_valid_password(client):
     )
     assert response.status_code == 201
     data = response.get_json()
-    assert "token" in data
-    assert "user_id" in data
-    assert data["username"] == "testuser"
+    assert data["success"] is True
+    assert "token" in data["data"]
+    assert "user_id" in data["data"]
+    assert data["data"]["username"] == "testuser"
 
 
 @pytest.mark.parametrize(
@@ -51,7 +54,9 @@ def test_signup_invalid_username(client, username, expected_error_fragment):
         json={"username": username, "password": "ValidPass123"},
     )
     assert response.status_code == 400
-    assert expected_error_fragment in response.get_json()["error"]
+    data = response.get_json()
+    assert data["success"] is False
+    assert expected_error_fragment in data["message"]
 
 
 def test_signup_valid_username(client):
@@ -61,7 +66,9 @@ def test_signup_valid_username(client):
         json={"username": "valid_user-123", "password": "ValidPass123"},
     )
     assert response.status_code == 201
-    assert response.get_json()["username"] == "valid_user-123"
+    data = response.get_json()
+    assert data["success"] is True
+    assert data["data"]["username"] == "valid_user-123"
 
 
 def test_signup_duplicate_username(client):
@@ -78,7 +85,9 @@ def test_signup_duplicate_username(client):
         json={"username": "testuser", "password": "AnotherPass456"},
     )
     assert response.status_code == 400
-    assert "already exists" in response.get_json()["error"]
+    data = response.get_json()
+    assert data["success"] is False
+    assert "already exists" in data["message"]
 
 
 @pytest.mark.parametrize(
@@ -93,7 +102,9 @@ def test_signup_missing_fields(client, payload, expected_error_fragment):
     """Test that missing required fields are rejected"""
     response = client.post("/api/auth/signup", json=payload)
     assert response.status_code == 400
-    assert expected_error_fragment in response.get_json()["error"]
+    data = response.get_json()
+    assert data["success"] is False
+    assert expected_error_fragment in data["message"]
 
 
 def test_login_rate_limit(rate_limited_client):

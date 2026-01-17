@@ -1,9 +1,9 @@
 from collections import defaultdict
 from flask import Blueprint, jsonify, request
 from app.auth import token_required
-from app.models import ProgressEntry
+from app.models import Habit, ProgressEntry
 from app.redis_client import get_cached_streak, set_cached_streak
-from app.utils import calculate_streak, get_habit_dict
+from app.utils import calculate_streak
 
 stats_bp = Blueprint("stats", __name__, url_prefix="/stats")
 
@@ -13,14 +13,14 @@ stats_bp = Blueprint("stats", __name__, url_prefix="/stats")
 def get_stats():
     streaks = {}
 
-    # TODO: Getting a habit_dict of all habits is probably a common pattern.
-    #   Consider creating a utility function of this instead.
-    habit_dict = get_habit_dict(request.user_id)
+    habits = Habit.query.filter_by(user_id=request.user_id).all()
+    if not habits:
+        return jsonify({"success": True, "data": streaks})
+
+    habit_ids = [habit.id for habit in habits]
 
     progress_entries = (
-        ProgressEntry.query.filter(
-            ProgressEntry.habit_id.in_(habit_dict.keys())
-        )
+        ProgressEntry.query.filter(ProgressEntry.habit_id.in_(habit_ids))
         .order_by(ProgressEntry.date.desc())
         .all()
     )
@@ -30,13 +30,7 @@ def get_stats():
     for entry in progress_entries:
         grouped_entries[entry.habit_id].append(entry)
 
-    # Assign grouped entries to habit_dict
-    for habit_id in habit_dict.keys():
-        habit_dict[habit_id]["progress_entries"] = grouped_entries[habit_id]
-
-    for habit_obj in habit_dict.values():
-        habit = habit_obj["habit"]
-
+    for habit in habits:
         # Check cache first
         cached_streak = get_cached_streak(habit.id)
         if cached_streak is not None:
@@ -44,9 +38,9 @@ def get_stats():
             continue
 
         # Cache miss - calculate and cache
-        entries = habit_obj["progress_entries"]
+        entries = grouped_entries[habit.id]
         streak = calculate_streak(habit, entries)
         set_cached_streak(habit.id, streak)
         streaks[habit.id] = streak
 
-    return jsonify(streaks)
+    return jsonify({"success": True, "data": streaks})

@@ -22,10 +22,10 @@ def signup():
     # Validate credentials
     is_valid, error_message = validate_auth_credentials(username, password)
     if not is_valid:
-        return jsonify({"error": error_message}), 400
+        return jsonify({"success": False, "message": error_message}), 400
 
     if User.query.filter_by(username=username).first():
-        return jsonify({"error": "Username already exists"}), 400
+        return jsonify({"success": False, "message": "Username already exists"}), 400
 
     hashed_password = get_hashed_password(password)
     new_user = User(username=username, password=hashed_password)
@@ -36,7 +36,10 @@ def signup():
     token = create_access_token(new_user.id)
 
     return (
-        jsonify({"token": token, "user_id": new_user.id, "username": new_user.username}),
+        jsonify({
+            "success": True,
+            "data": {"token": token, "user_id": new_user.id, "username": new_user.username},
+        }),
         201,
     )
 
@@ -50,19 +53,22 @@ def login():
 
     # Check for required fields
     if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+        return jsonify({"success": False, "message": "Username and password are required"}), 400
 
     user = User.query.filter_by(username=username).first()
 
     if not user or not check_password(password, user.password):
-        return jsonify({"error": "Invalid username or password"}), 401
+        return jsonify({"success": False, "message": "Invalid username or password"}), 401
 
     token = create_access_token(user.id)
 
-    return jsonify({"token": token, "user_id": user.id, "username": user.username}), 200
+    return jsonify({
+        "success": True,
+        "data": {"token": token, "user_id": user.id, "username": user.username},
+    }), 200
 
 
 @auth_bp.route("/verify", methods=["GET"])
 @token_required
 def verify_token():
-    return jsonify({"message": "Token is valid"}), 200
+    return jsonify({"success": True, "message": "Token is valid"}), 200
