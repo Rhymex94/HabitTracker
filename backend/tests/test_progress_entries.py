@@ -195,3 +195,88 @@ def test_create_progress_entry_input_validation(client, test_habits, test_auth_h
     data = response.get_json()
     assert data["success"] is False
     assert expected_error in data["message"].lower()
+
+
+def test_create_progress_entry_missing_habit_id(client, test_auth_headers):
+    """Test that missing habit_id returns 400."""
+    payload = {"date": "2024-05-01", "value": 1}
+
+    response = client.post("/api/progress", json=payload, headers=test_auth_headers)
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["success"] is False
+    assert "missing required fields" in data["message"].lower()
+
+
+def test_create_progress_entry_missing_value(client, test_habits, test_auth_headers):
+    """Test that missing value returns 400."""
+    habit = test_habits[0]
+    payload = {"habit_id": habit.id, "date": "2024-05-01"}
+
+    response = client.post("/api/progress", json=payload, headers=test_auth_headers)
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["success"] is False
+    assert "missing required fields" in data["message"].lower()
+
+
+def test_create_progress_entry_habit_not_found(client, test_auth_headers):
+    """Test that non-existent habit returns 404."""
+    payload = {"habit_id": 999999, "date": "2024-05-01", "value": 1}
+
+    response = client.post("/api/progress", json=payload, headers=test_auth_headers)
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["success"] is False
+    assert "not found" in data["message"].lower()
+
+
+def test_create_progress_entry_default_date(client, test_habits, test_auth_headers):
+    """Test that missing date defaults to current date."""
+    from datetime import datetime, timezone
+
+    habit = test_habits[0]
+    payload = {"habit_id": habit.id, "value": 1}
+
+    response = client.post("/api/progress", json=payload, headers=test_auth_headers)
+    assert response.status_code == 201
+    data = response.get_json()
+    assert data["success"] is True
+
+    # The date should be today's date
+    today = datetime.now(timezone.utc).date().isoformat()
+    assert data["data"]["date"] == today
+
+
+def test_get_progress_entries_without_habit_id(client, progress_entries, test_auth_headers):
+    """Test fetching all progress entries for a user without habit_id filter."""
+    response = client.get("/api/progress?all=true", headers=test_auth_headers)
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert data["success"] is True
+    assert isinstance(data["data"], list)
+    # Should return all progress entries for the user
+    assert len(data["data"]) == len(progress_entries)
+
+
+def test_get_progress_entries_invalid_start_date_format(client, test_auth_headers):
+    """Test that invalid start_date format returns 400."""
+    response = client.get(
+        "/api/progress?start_date=invalid-date&all=true", headers=test_auth_headers
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["success"] is False
+    assert "invalid start_date format" in data["message"].lower()
+
+
+def test_get_progress_entries_invalid_end_date_format(client, test_auth_headers):
+    """Test that invalid end_date format returns 400."""
+    response = client.get(
+        "/api/progress?end_date=not-a-date&all=true", headers=test_auth_headers
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["success"] is False
+    assert "invalid end_date format" in data["message"].lower()
