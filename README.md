@@ -1,6 +1,7 @@
 # Habit Tracker
 
 A full-stack habit tracking application designed to help users create, monitor, and maintain habits with flexible tracking options and progress visualization.
+The development of this project is heavily AI-assisted.
 
 ## Features
 
