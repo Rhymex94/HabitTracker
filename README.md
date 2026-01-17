@@ -4,7 +4,7 @@ A full-stack habit tracking application designed to help users create, monitor, 
 
 ## Features
 
-- **User Authentication**: Secure JWT-based authentication with session management
+- **User Authentication**: Secure JWT-based authentication with session management and rate limiting
 - **Flexible Habit Types**:
   - Binary habits (yes/no completion)
   - Quantitative habits with custom units (e.g., "Run 5 km", "Practice 30 minutes")
@@ -23,9 +23,11 @@ A full-stack habit tracking application designed to help users create, monitor, 
 - **Framework**: Flask 3.0
 - **ORM**: SQLAlchemy 3.1
 - **Database**: MySQL 8.0
+- **Caching**: Redis (optional, for streak caching)
 - **Authentication**: JWT (PyJWT 2.8)
 - **Password Hashing**: bcrypt 4.1
-- **Testing**: pytest with pytest-flask
+- **Rate Limiting**: Flask-Limiter
+- **Testing**: pytest with pytest-flask (97% coverage)
 
 ### Frontend
 - **Framework**: React 19
@@ -103,6 +105,9 @@ A full-stack habit tracking application designed to help users create, monitor, 
 # Run all tests
 docker exec habittracker-backend-1 python -m pytest tests/ -v
 
+# Run with coverage report
+docker exec habittracker-backend-1 python -m pytest tests/ --cov=app --cov-report=term-missing
+
 # Run specific test file
 docker exec habittracker-backend-1 python -m pytest tests/test_habits.py -v
 
@@ -148,12 +153,18 @@ Required for production:
 
 - `SECRET_KEY`: JWT token signing key (required, no default in production)
 - `DATABASE_URL`: MySQL connection string (default: `mysql+pymysql://user:password@db/habits_db`)
-- `FRONTEND_ORIGIN`: CORS allowed origin (default: `http://localhost:3000`)
+- `FRONTEND_ORIGIN`: CORS allowed origin(s), comma-separated for multiple (default: `http://localhost:3000`)
 
 Optional:
 
 - `ENVIRONMENT`: Set to `development` to allow default SECRET_KEY (never use in production)
-- `FLASK_ENV`: Flask environment mode
+- `REDIS_URL`: Redis connection URL for caching (e.g., `redis://redis:6379/0`). If not set, caching is disabled.
+- `DB_POOL_SIZE`: Database connection pool size (default: 10)
+- `DB_MAX_OVERFLOW`: Extra connections when pool exhausted (default: 20)
+- `DB_POOL_TIMEOUT`: Seconds to wait for connection (default: 30)
+- `DB_POOL_RECYCLE`: Seconds before recycling connections (default: 1800)
+
+See `.env.example` for a complete list with descriptions.
 
 ### Database Setup
 
@@ -175,10 +186,10 @@ Optional:
 - [ ] **Do NOT** set `ENVIRONMENT=development` in production
 - [ ] Use a production WSGI server (e.g., Gunicorn, uWSGI) instead of Flask development server
 - [ ] Enable HTTPS/TLS for all traffic
-- [ ] Configure database connection pooling for production load
+- [ ] Configure database connection pooling for production load (see DB_POOL_* env vars)
 - [ ] Set up regular database backups
 - [ ] Review and configure CORS origins appropriately
-- [ ] Enable rate limiting for authentication endpoints (recommended)
+- [ ] Configure Redis for caching (optional but recommended for performance)
 
 ### Docker Production Build
 
@@ -202,10 +213,14 @@ HabitTracker/
 │   │   │   └── stats.py    # Statistics and analytics
 │   │   ├── models.py       # SQLAlchemy models
 │   │   ├── auth.py         # JWT authentication logic
+│   │   ├── config.py       # Application configuration
 │   │   ├── utils.py        # Helper functions (streak calculation, etc.)
-│   │   └── config.py       # Application configuration
+│   │   ├── validators.py   # Input validation
+│   │   ├── redis_client.py # Redis caching client
+│   │   ├── limiter.py      # Rate limiting configuration
+│   │   └── security_logger.py # Security event logging
 │   ├── migrations/         # Database migration files
-│   ├── tests/              # Backend test suite
+│   ├── tests/              # Backend test suite (154 tests)
 │   └── requirements.txt    # Python dependencies
 ├── frontend-web/           # React frontend application
 │   ├── src/
@@ -214,6 +229,9 @@ HabitTracker/
 │   │   ├── api/            # API client configuration
 │   │   └── styles/         # CSS stylesheets
 │   └── package.json        # Node.js dependencies
+├── specification/          # Project documentation
+│   ├── FEATURE_SPEC.md     # Feature specification
+│   └── SECURITY_AND_QUALITY_REVIEW.md # Security review
 ├── docker-compose.yml      # Development environment setup
 ├── .env                    # Local environment variables (not committed)
 ├── .env.example            # Environment variables template
@@ -266,7 +284,9 @@ docker exec habittracker-backend-1 flask db downgrade
 
 - Backend follows PEP 8 style guidelines
 - Frontend uses ESLint with React-specific rules
-- All security-critical code has comprehensive test coverage
+- Backend test coverage: 97% (154 tests)
+- Security events are logged in structured JSON format to stderr
+- Rate limiting protects authentication endpoints from brute force attacks
 
 ## Troubleshooting
 

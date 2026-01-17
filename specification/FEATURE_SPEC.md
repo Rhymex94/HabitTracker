@@ -9,8 +9,9 @@ A habit tracking application designed to help users create, monitor, and maintai
 - **Backend**: Flask (Python) with SQLAlchemy ORM
 - **Frontend**: React (TypeScript) with Vite
 - **Database**: MySQL 8.0
+- **Caching**: Redis (optional, for streak caching)
 - **Deployment**: Dockerized stack with Docker Compose
-- **Authentication**: JWT-based token authentication
+- **Authentication**: JWT-based token authentication with rate limiting
 
 ---
 
@@ -149,12 +150,17 @@ A habit tracking application designed to help users create, monitor, and maintai
 - User authentication (signup, login, JWT)
 - Habit CRUD operations
 - Progress entry creation and deletion
-- Streak calculation logic
+- Streak calculation logic (with Redis caching)
 - Modal-based UI workflow
 - Docker containerization
 - Database migrations
-- Test coverage for core features
+- Test coverage: 97% (154 tests)
 - Unit field (input, storage, display)
+- Input validation (password strength, field lengths, numeric ranges)
+- Rate limiting on authentication endpoints
+- Security event logging (structured JSON)
+- HTTPS enforcement in production (nginx)
+- Database connection pooling
 
 ### Partially Implemented
 - Progress filtering (backend supports it, frontend uses defaults)
@@ -195,9 +201,10 @@ A habit tracking application designed to help users create, monitor, and maintai
 ```python
 {
   id: Integer (PK)
-  date: Date
+  date: Date (indexed)
   value: Float
-  habit_id: Integer (FK -> Habit, cascade delete)
+  habit_id: Integer (FK -> Habit, cascade delete, indexed)
+  # Composite index on (habit_id, date) for efficient queries
 }
 ```
 
@@ -331,13 +338,13 @@ All API endpoints use a standardized response format with a `success` flag to in
 - [ ] Consolidate similar modals (AddProgress + MarkComplete)
 - [ ] Unify CSS button classes (.add-button, .save-button → .button-primary)
 - [ ] Extract `getProgress()` calculation from HabitCard (memoize or backend)
-- [ ] Move completion logic from frontend to backend
-- [ ] Extract `get_habit_dict` as common pattern (backend/app/routes/stats.py:16)
+- [x] Move completion logic from frontend to backend
+- [x] Consolidate duplicate utility code (date filtering, habit dict building)
 
 ### Testing
+- [x] 97% backend test coverage (154 tests)
 - [ ] Use pytest factories instead of fixtures
 - [ ] Add parametrization for edge cases
-- [ ] Mock nested helper function calls
 - [ ] Frontend unit tests (currently none)
 - [ ] E2E integration tests
 
@@ -354,11 +361,13 @@ All API endpoints use a standardized response format with a `success` flag to in
 - [x] Password hashing with bcrypt
 - [x] JWT token expiration (24 hours)
 - [x] Token-based route protection
-- [x] CORS configuration
-- [ ] Rate limiting on authentication endpoints
-- [ ] Password strength requirements
+- [x] CORS configuration (with origin validation)
+- [x] Rate limiting on authentication endpoints (Flask-Limiter)
+- [x] Password strength requirements (8+ chars, uppercase, lowercase, number)
+- [x] Input validation (field lengths, numeric ranges)
+- [x] HTTPS enforcement in production (nginx redirect)
+- [x] Security event logging (login attempts, token failures)
 - [ ] Account lockout after failed attempts
-- [ ] HTTPS enforcement in production
 
 ---
 
@@ -374,7 +383,7 @@ All API endpoints use a standardized response format with a `success` flag to in
 4. **Cascading Deletes**: Deleting a habit removes all associated progress entries to maintain data integrity.
 
 ### Known Issues
-- API validation errors not shown to users
+- API validation errors not shown to users (frontend displays generic error messages)
 
 ---
 
@@ -390,4 +399,6 @@ All API endpoints use a standardized response format with a `success` flag to in
 - **v0.8** (2026-01-06): Future-dated progress entry validation with dynamic test
 - **v0.9** (2026-01-07): Visual progress indicators (checkboxes for binary, progress bars for quantitative)
 - **v1.0** (2026-01-08): Backend-driven completion status with comprehensive tests
-- **Current**: Core functionality complete, analytics features pending
+- **v1.1** (2026-01-10): Security hardening (rate limiting, input validation, HTTPS, security logging)
+- **v1.2** (2026-01-17): Performance improvements (Redis caching, DB indexes, connection pooling), 97% test coverage
+- **Current**: Production-ready MVP with comprehensive security and test coverage
