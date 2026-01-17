@@ -30,7 +30,7 @@ const SignupForm: React.FC = () => {
 			const response = await api.post("/auth/signup", { username, password });
 
 			// Use the new login function from context (default to rememberMe = true for new signups)
-			login(response.data.data.token, response.data.data.user_id.toString(), true);
+			login(response.data.data.token, true);
 
 			// Navigate to home page
 			navigate("/", { replace: true });

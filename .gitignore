@@ -4,3 +4,4 @@ specification
 # Environment variables
 .env
 .env.local
+stack.env

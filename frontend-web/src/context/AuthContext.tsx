@@ -4,11 +4,10 @@ import api from "../api/axios";
 
 interface AuthContextType {
 	isAuthenticated: boolean;
-	userId: string | null;
 	logout: () => void;
 	checkAuth: () => Promise<boolean>;
 	isLoading: boolean;
-	login: (token: string, userId: string, rememberMe: boolean) => void;
+	login: (token: string, rememberMe: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -23,7 +22,6 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const [userId, setUserId] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const navigate = useNavigate();
 
@@ -34,23 +32,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		return sessionStorage;
 	};
 
-	const login = (token: string, userId: string, rememberMe: boolean) => {
+	const login = (token: string, rememberMe: boolean) => {
 		const storage = rememberMe ? localStorage : sessionStorage;
 		storage.setItem("token", token);
-		storage.setItem("userId", userId);
 		api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 		setIsAuthenticated(true);
-		setUserId(userId);
 	};
 
 	const checkAuth = async () => {
 		const storage = getStorage();
 		const token = storage.getItem("token");
-		const storedUserId = storage.getItem("userId");
 
-		if (!token || !storedUserId) {
+		if (!token) {
 			setIsAuthenticated(false);
-			setUserId(null);
 			return false;
 		}
 
@@ -60,7 +54,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 			// Verify token with backend
 			await api.get("/auth/verify");
 			setIsAuthenticated(true);
-			setUserId(storedUserId);
 			return true;
 		} catch (err) {
 			logout();
@@ -70,12 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 	const logout = () => {
 		localStorage.removeItem("token");
-		localStorage.removeItem("userId");
 		sessionStorage.removeItem("token");
-		sessionStorage.removeItem("userId");
 		delete api.defaults.headers.common["Authorization"];
 		setIsAuthenticated(false);
-		setUserId(null);
 		navigate("/login");
 	};
 
@@ -121,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 	return (
 		<AuthContext.Provider
-			value={{ isAuthenticated, userId, logout, checkAuth, isLoading, login }}
+			value={{ isAuthenticated, logout, checkAuth, isLoading, login }}
 		>
 			{children}
 		</AuthContext.Provider>

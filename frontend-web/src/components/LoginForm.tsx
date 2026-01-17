@@ -31,7 +31,7 @@ const LoginForm: React.FC = () => {
 			const response = await api.post("/auth/login", { username, password });
 
 			// Use the new login function from context
-			login(response.data.data.token, response.data.data.user_id.toString(), rememberMe);
+			login(response.data.data.token, rememberMe);
 
 			// Get the redirect path from location state, or default to "/"
 			const from = (location.state as LocationState)?.from?.pathname || "/";
